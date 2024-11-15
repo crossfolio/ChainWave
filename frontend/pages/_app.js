@@ -75,9 +75,6 @@ function MyApp({ Component, pageProps }) {
         walletAddress: address,
         name: username,
         worldId: worldcoinId,
-        alarms: [],
-        createdAt: '2024-11-08T07:55:02.417Z',
-        updatedAt: '2024-11-08T07:55:02.417Z',
       }),
     });
 
