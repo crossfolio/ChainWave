@@ -20,3 +20,181 @@ body {
 .dark body {
     @apply bg-gray-900 text-white;
 }
+
+/* Header Styling */
+.header {
+    display: flex;
+    justify-content: space-between;
+    /* 左右兩側元素間隔均分 */
+    align-items: center;
+    /* 垂直置中 */
+    padding: 0 20px;
+    /* 增加左右邊距 */
+    background-color: #1c1c1c;
+    image-rendering: pixelated;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    z-index: 1000;
+    border-bottom: 2px solid #1c1c1c;
+}
+
+/* MetaMask Button Styling */
+.metamask-btn {
+    padding: 8px 16px;
+    background-color: #1c1c1c;
+    color: #fcfaf2;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    font-family: 'Press Start 2P', cursive;
+    transition: background-color 0.3s;
+}
+
+/* Button Hover Effect */
+.metamask-btn:hover {
+    background-color: #4f4f48;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 220px;
+    background-color: #1c1c1c;
+    /* Bright sidebar */
+    color: #1c1c1c;
+    padding: 20px;
+    height: 100vh;
+    /* Ensures it fills the entire screen height */
+    position: fixed;
+    top: 40px;
+    /* Start below the header */
+    left: 0;
+    overflow-y: auto;
+    font-family: 'Press Start 2P', cursive;
+    image-rendering: pixelated;
+    box-shadow: 3px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #1c1c1c;
+    border: 2px solid #1c1c1c;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    color: #fcfaf2;
+    text-align: center;
+}
+
+.sidebar li:hover {
+    background-color: #4f4f48;
+}
+
+/* Main Layout */
+.main-layout {
+    display: flex;
+    margin-left: 220px;
+    /* 推動主要內容到 Sidebar 右側 */
+    margin-top: 40px;
+    /* 將內容從 Header 下方開始 */
+    height: calc(100vh - 40px);
+    /* 扣除 Header 的高度 */
+    overflow: auto;
+    position: relative;
+    /* 確保子頁面正常顯示 */
+    z-index: 1;
+    /* 避免被 Header 和 Sidebar 蓋住 */
+}
+
+/* Content Styling */
+.content {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 40px);
+    /* 扣除 Header 高度 */
+    overflow-y: auto;
+    color: #fcfaf2;
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+/* Logout Dialog Overlay */
+.logout-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Logout Dialog Box */
+.logout-dialog {
+    background: #fcfaf2;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Dialog Buttons */
+.dialog-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+/* Confirm Button */
+.confirm-btn {
+    background-color: #1c1c1c;
+    color: #fcfaf2;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.confirm-btn:hover {
+    background-color: #4f4f48;
+}
+
+/* Cancel Button */
+.cancel-btn {
+    background-color: #fcfaf2;
+    color: #1c1c1c;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.cancel-btn:hover {
+    background-color: #4f4f48;
+}
