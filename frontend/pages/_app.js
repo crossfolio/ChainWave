@@ -7,7 +7,6 @@ import ThemeToggle from "../components/ThemeToggle";
 import CreateAccountDialog from "../components/CreateAccountDialog";
 import { useRouter } from "next/router";
 import { connectMetaMask } from "../utils/metamask";
-
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -76,6 +75,7 @@ function MyApp({ Component, pageProps }) {
     setIsAuthenticated(true);
     localStorage.setItem("account", account);
     localStorage.setItem("isAuthenticated", "true");
+    console.log("Created account successfully");
   };
 
   const onLogout = () => {
@@ -153,7 +153,6 @@ function MyApp({ Component, pageProps }) {
           </main>
         </div>
       </div>
-
       <CreateAccountDialog
         isOpen={showCreateAccountDialog}
         onClose={() => setShowCreateAccountDialog(false)}

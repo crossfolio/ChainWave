@@ -13,24 +13,23 @@ export const connectMetaMask = async (setAccount, setIsAuthenticated, showCreate
     const newAccount = accounts[0];
     setAccount(newAccount);
 
-    // 執行 queryAttestations 驗證
-    const querySchemaId = "onchain_evm_421614_0x14e"; // 替換為您的 Schema ID
-    const worldcoinId = Cookies.get("worldcoinId"); // 替換為您的 Worldcoin ID
+    const querySchemaId = "onchain_evm_421614_0x14e";
+    const worldcoinId = Cookies.get("worldcoinId");
     const isValid = await queryAttestations(querySchemaId, worldcoinId);
 
     if (isValid.revoked === true) {
       showCreateAccountDialog();
     } else if (isValid.result === true) {
       setIsAuthenticated(true);
-      localStorage.setItem('account', newAccount);
-      localStorage.setItem('isAuthenticated', 'true');
-      console.log('Verified successfully');
+      localStorage.setItem("account", newAccount);
+      localStorage.setItem("isAuthenticated", "true");
+      console.log("Verified successfully");
     } else {
       setIsAuthenticated(false);
-      console.log('Verification failed');
-      alert('Account verification failed, please try again');
+      console.log("Verification failed");
+      alert("Account verification failed, please try again");
     }
   } catch (error) {
-    console.error('Connection MetaMask error:', error);
+    console.error("Connection MetaMask error:", error);
   }
 };

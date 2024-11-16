@@ -19,7 +19,7 @@ export async function queryAttestations(querySchemaId, worldcoinId) {
       schemaId: querySchemaId,
       page: 1,
       mode: "onchain",
-      signerAddress: currentAccount,
+      attester: currentAccount,
     });
 
     console.log("Query response:", response);

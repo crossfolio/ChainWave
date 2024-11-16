@@ -17,7 +17,6 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
     { name: "Assets", path: "/multi-chain-assets", icon: <FaWallet /> },
     { name: "Alerts", path: "/notification", icon: <FaBell /> },
     { name: "X-Swap", path: "/crosschain-swap", icon: <FaExchangeAlt /> },
-    { name: "Sign-Protocol", path: "/sign-protocol", icon: <FaWallet /> },
     { name: "Setting", path: "/setting", icon: <FaCog /> },
   ];
 

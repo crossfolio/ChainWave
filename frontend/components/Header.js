@@ -58,7 +58,7 @@ export default function Header({ account, onWalletConnected, onLogout }) {
               src={profileImage}
               alt="Profile"
               className="w-10 h-10 rounded-full cursor-pointer"
-              onClick={openDialog}
+              onClick={openLogoutDialog}
             />
           )}
         </div>
@@ -71,7 +71,6 @@ export default function Header({ account, onWalletConnected, onLogout }) {
         </button>
       )}
 
-      {/* 登出對話框 */}
       {showLogoutDialog && <LogoutDialog confirmLogout={confirmLogout} cancelLogout={closeLogoutDialog} />}
     </div>
   );
