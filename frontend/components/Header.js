@@ -28,7 +28,8 @@ export default function Header({ account, onWalletConnected, onLogout }) {
               const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(userInfo.name)}`;
               setProfileImage(imageUrl);
             }else if (userInfo === null) {
-              setProfileImage(null);
+              const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(savedAddress)}`;
+              setProfileImage(imageUrl);
             }
           }
         } catch (error) {
