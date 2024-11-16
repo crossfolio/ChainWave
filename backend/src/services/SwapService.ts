@@ -291,7 +291,7 @@ export class SwapService {
     let tokenAddress
     if (chain === 'ETH') {
       rpcURL = process.env.ETH_RPC_URL
-      contractAddress = contract_address.ETH.AutoSwap
+      contractAddress = contract_address.ETH.ChainWave
       if (token === 'USDC') {
         tokenAddress = contract_address.ETH.Token.USDC
       } else if (token === 'UNI') {
@@ -299,7 +299,7 @@ export class SwapService {
       }
     } else if (chain === 'ARB') {
       rpcURL = process.env.ARB_RPC_URL
-      contractAddress = contract_address.ARB.AutoSwap
+      contractAddress = contract_address.ARB.ChainWave
       if (token === 'USDC') {
         tokenAddress = contract_address.ARB.Token.USDC
       } else if (token === 'UNI') {
