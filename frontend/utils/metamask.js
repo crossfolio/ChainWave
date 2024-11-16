@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie';
 import { queryAttestations } from './signProtocol';
+import { ethers } from 'ethers';
 
 export const connectMetaMask = async (
   setAccount,
@@ -7,15 +8,16 @@ export const connectMetaMask = async (
   showCreateAccountDialog,
 ) => {
   if (!window.ethereum) {
-    alert('請安裝 MetaMask 錢包！');
+    alert('Please install the MetaMask wallet!');
     return;
   }
 
   try {
-    const accounts = await window.ethereum.request({
-      method: 'eth_requestAccounts',
-    });
-    const newAccount = accounts[0];
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const newAccount = await signer.getAddress();
+    console.log('Current MetaMask account:', newAccount);
     setAccount(newAccount);
     Cookies.set('newAccount', newAccount, { expires: 1 });
 
