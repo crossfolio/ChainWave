@@ -81,17 +81,16 @@ export async function queryAttestationsId(querySchemaId, worldcoinId) {
     const indexService = new IndexService('testnet');
     console.log('Querying attestations with schemaId:', querySchemaId);
 
-    const accounts = await window.ethereum.request({
-      method: 'eth_requestAccounts',
-    });
-    const currentAccount = accounts[0];
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const currentAccount = await signer.getAddress();
     console.log('Current MetaMask account:', currentAccount);
 
     const response = await indexService.queryAttestationList({
       schemaId: querySchemaId,
       page: 1,
       mode: 'onchain',
-      signerAddress: currentAccount,
+      attester: currentAccount,
     });
 
     console.log('Query response:', response);
