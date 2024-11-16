@@ -10,6 +10,8 @@ dotenv.config()
 
 const app = express()
 
+// TODO: add cors
+
 // Middleware
 app.use(express.json())
 

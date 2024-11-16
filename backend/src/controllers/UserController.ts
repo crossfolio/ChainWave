@@ -11,6 +11,7 @@ import {
 } from 'tsoa'
 import { userService } from '../services/UserService'
 import { UserDTO } from '../interfaces/UserDTO'
+import { AlarmDTO } from '../interfaces/AlarmDTO'
 import { ResponseModel, sendError, sendOk } from '../utils/routeHelp'
 
 @Route('users')
@@ -78,5 +79,43 @@ export class UserController extends Controller {
       })
     }
     return sendOk()
+  }
+
+  @Post('{wallet_address}/alarms')
+  public async addOrRemoveAlarms(
+    @Path() wallet_address: string,
+    @Body() alarmsData: AlarmDTO[],
+  ): Promise<ResponseModel> {
+    try {
+      const user = await userService.updateUserAlarms(
+        wallet_address,
+        alarmsData,
+      )
+      return sendOk()
+    } catch (error) {
+      console.log(error)
+      this.setStatus(500)
+      return sendError({
+        code: 500,
+        msg: 'addOrRemoveAlarms failed',
+      })
+    }
+  }
+
+  @Get('{wallet_address}/alarms')
+  public async getUserWithAlarms(
+    @Path() wallet_address: string,
+  ): Promise<AlarmDTO[] | ResponseModel> {
+    try {
+      const user = await userService.getUserWithAlarms(wallet_address)
+      return user.alarms || []
+    } catch (error) {
+      console.log(error)
+      this.setStatus(500)
+      return sendError({
+        code: 500,
+        msg: 'getUserWithAlarms failed',
+      })
+    }
   }
 }
