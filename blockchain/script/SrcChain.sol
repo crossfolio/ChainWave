@@ -22,6 +22,8 @@ contract SrcChainScript is Script {
         0xe49d2815C231826caB58017e214Bed19fE1c2dD4;
     address public ETH_CHAIN_WAVE_CONTRACT_ADDRESS =
         0x36Ada81c3436F8C75A243425B9Ebd3320858c313;
+    address public ARB_CHAIN_WAVE_CONTRACT_ADDRESS =
+        0xdc8cFDE4E25df84562D32E5Bd5F0e78E432b9c17;
 
     address zeroAddress = address(0);
 
@@ -34,15 +36,15 @@ contract SrcChainScript is Script {
     function run() public {
         address user = address(0xAbCDefA067FF1201719867f10e497dEEAc78CC67);
         uint32 destinationDomain = 3;
-        address destinationRecipient = address(0x123);
+        address destinationRecipient = ARB_CHAIN_WAVE_CONTRACT_ADDRESS;
 
         address token0 = USDC_ETH_CONTRACT_ADDRESS;
         address token1 = UNI_ETH_CONTRACT_ADDRESS;
         uint24 fee = 3000;
         int24 tickSpacing = 60;
         address hookAddr = zeroAddress;
-        bool zeroForOne = true;
-        int256 amountSpecified = -1000;
+        bool zeroForOne = false;
+        int256 amountSpecified = -0.0001 ether;
         bytes memory hookData = new bytes(0); // 0x
 
         vm.startBroadcast();
@@ -55,7 +57,7 @@ contract SrcChainScript is Script {
         // );
 
         // vm.prank(user);
-        IERC20(token0).approve(
+        IERC20(token1).approve(
             address(ETH_CHAIN_WAVE_CONTRACT_ADDRESS),
             type(uint256).max
         );
@@ -67,18 +69,7 @@ contract SrcChainScript is Script {
         //     destinationRecipient
         // );
 
-        ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).singleChainSwap(
-            token0,
-            token1,
-            fee,
-            tickSpacing,
-            hookAddr,
-            amountSpecified,
-            zeroForOne,
-            hookData
-        );
-
-        // chainWave.multiChainSwap(
+        // ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).singleChainSwap(
         //     token0,
         //     token1,
         //     fee,
@@ -86,10 +77,21 @@ contract SrcChainScript is Script {
         //     hookAddr,
         //     amountSpecified,
         //     zeroForOne,
-        //     hookData,
-        //     destinationDomain,
-        //     destinationRecipient
+        //     hookData
         // );
+
+        ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).multiChainSwap(
+            token0,
+            token1,
+            fee,
+            tickSpacing,
+            hookAddr,
+            amountSpecified,
+            zeroForOne,
+            hookData,
+            destinationDomain,
+            destinationRecipient
+        );
 
         // chainWave.autoSingleChainSwap(
         //     token0,

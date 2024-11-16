@@ -56,6 +56,6 @@ export const contract_address = {
       UNI: '0x0',
     },
 
-    AutoSwap: '0x8d44abda004315646dcA14F3B35B270cc12167A0',
+    ChainWave: '0xdc8cFDE4E25df84562D32E5Bd5F0e78E432b9c17',
   },
 }
