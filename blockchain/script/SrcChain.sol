@@ -23,10 +23,14 @@ contract SrcChainScript is Script {
 
     address zeroAddress = address(0);
 
-    function setUp() public {}
+    function setUp() public {
+        vm.createSelectFork(
+            "https://eth-sepolia.g.alchemy.com/v2/vH0O61Etz-4nHscME2FA6IWVfpB2sSQ3"
+        );
+    }
 
     function run() public {
-        address user = address(0xf73Dc2BdeB8855af9dc2B862C78DBB1F679b95c2);
+        address user = address(0xAbCDefA067FF1201719867f10e497dEEAc78CC67);
         uint32 destinationDomain = 3;
         address destinationRecipient = address(0x123);
 
@@ -39,7 +43,7 @@ contract SrcChainScript is Script {
         int256 amountSpecified = -0.00001 ether;
         bytes memory hookData = new bytes(0); // 0x
 
-        vm.startBroadcast();
+        // vm.startBroadcast();
 
         ChainWave chainWave = new ChainWave(
             ETH_UNI_ROUTER_V4_CONTRACT_ADDRESS,
@@ -48,6 +52,7 @@ contract SrcChainScript is Script {
             USDC_ETH_CONTRACT_ADDRESS
         );
 
+        vm.prank(user);
         IERC20(token1).approve(address(chainWave), type(uint256).max);
 
         // chainWave.departureUSDC(
@@ -68,7 +73,20 @@ contract SrcChainScript is Script {
         //     hookData
         // );
 
-        chainWave.multiChainSwap(
+        // chainWave.multiChainSwap(
+        //     token0,
+        //     token1,
+        //     fee,
+        //     tickSpacing,
+        //     hookAddr,
+        //     amountSpecified,
+        //     zeroForOne,
+        //     hookData,
+        //     destinationDomain,
+        //     destinationRecipient
+        // );
+
+        chainWave.autoSingleChainSwap(
             token0,
             token1,
             fee,
@@ -77,10 +95,9 @@ contract SrcChainScript is Script {
             amountSpecified,
             zeroForOne,
             hookData,
-            destinationDomain,
-            destinationRecipient
+            user
         );
 
-        vm.stopBroadcast();
+        // vm.stopBroadcast();
     }
 }
