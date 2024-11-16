@@ -1,0 +1,20 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000' 
+    environment:
+      - NEXT_PUBLIC_NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+      - NEXT_PUBLIC_COINMARKETCAP_KEY=${NEXT_PUBLIC_COINMARKETCAP_KEY}
+      - NEXT_PUBLIC_WLD_APP_ID=${NEXT_PUBLIC_WLD_APP_ID}
+      - NEXT_PUBLIC_WLD_ACTION=${NEXT_PUBLIC_WLD_ACTION}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
