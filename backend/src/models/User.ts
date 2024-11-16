@@ -31,7 +31,7 @@ const UserSchema: Schema = new Schema<IUser>(
     ],
   },
   {
-    versionKey: false, // 禁用 __v 字段
+    versionKey: false,
     timestamps: true,
   },
 )
