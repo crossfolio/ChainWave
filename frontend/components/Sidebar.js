@@ -1,6 +1,7 @@
-import { FaWallet, FaBell, FaExchangeAlt, FaBars, FaTimes } from 'react-icons/fa';
+import { FaWallet, FaBell, FaExchangeAlt, FaBars, FaTimes, FaCog } from 'react-icons/fa';
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
+import { formatAddress } from '../utils/util';
 
 export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
     { name: 'Alerts', path: '/notification', icon: <FaBell /> },
     { name: 'X-Swap', path: '/crosschain-swap', icon: <FaExchangeAlt /> },
     { name: 'Sign-Protocol', path: '/sign-protocol', icon: <FaWallet /> },
+    { name: 'Setting', path: '/setting', icon: <FaCog /> },
   ];
 
   const handleNavigation = (path) => router.push(path);
@@ -57,7 +59,9 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
         {!isCollapsed && (
           <>
             <p>Connected as:</p>
-            <p className="font-semibold truncate">{account || 'Not connected'}</p>
+            <p className="font-semibold truncate">
+              {account ? formatAddress(account) : 'Not connected'}
+            </p>
           </>
         )}
       </div>

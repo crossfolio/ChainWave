@@ -26,8 +26,6 @@ export default function SignProtocol({ account }) {
   const [attestationId, setAttestationId] = useState("");
 
   const [worldcoinId, setWorldcoinId] = useState("");
-  const [ethereumAddress, setEthereumAddress] = useState("");
-  const [timestamp, setTimestamp] = useState("");
 
   useEffect(() => {
     if (!account) connectWallet();
@@ -56,7 +54,7 @@ export default function SignProtocol({ account }) {
         data: JSON.parse(schemaData),
         signatureRules: {
           method: "eth_sign",
-          fieldsToSign: ["worldcoinId", "ethereumAddress", "timestamp"],
+          fieldsToSign: ["worldcoinId"],
         },
       });
       console.log("Schema created successfully:", createSchemaRes);
@@ -85,8 +83,7 @@ export default function SignProtocol({ account }) {
       !window.ethereum ||
       !account ||
       !schemaId ||
-      !worldcoinId ||
-      !ethereumAddress
+      !worldcoinId
     ) {
       alert(
         "Please ensure all fields are filled in, and MetaMask is connected"
@@ -95,12 +92,9 @@ export default function SignProtocol({ account }) {
     }
 
     try {
-      const timestamp = Math.floor(Date.now() / 1000);
 
       const message = JSON.stringify({
         worldcoinId: worldcoinId,
-        ethereumAddress: ethereumAddress,
-        timestamp: timestamp,
       });
 
       const signedMessage = await window.ethereum.request({
@@ -266,6 +260,7 @@ export default function SignProtocol({ account }) {
             Create Attestation
           </button>
         </div>
+        {/* Query Attestation Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-4">Query Attestations</h3>
           <label className="block font-medium mb-1">Schema Id</label>
