@@ -64,7 +64,7 @@ export default function MultiChainAssets() {
   const handleSubmit = async () => {
     const savedAddress = Cookies.get('newAccount');
     const alarms = await getAlarms(savedAddress);
-    const simplifiedAlarms = alarms.map(({ symbol, condition, price,
+    const simplifiedAlarms = alarms.length > 0 ? alarms.map(({ symbol, condition, price,
       status, isSwap, srcChain,
       dstChain, srcToken, destToken }) => ({
         symbol,
@@ -76,7 +76,7 @@ export default function MultiChainAssets() {
         dstChain,
         srcToken,
         destToken
-      }));
+      })) : 0;
 
     simplifiedAlarms.push({
       symbol: selectedToken.symbol,
