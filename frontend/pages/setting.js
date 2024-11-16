@@ -210,9 +210,6 @@ export default function SettingPage() {
             </div>
           </div>
           <div>
-            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Profile Picture
-            </p>
           </div>
         </div>
 
@@ -362,7 +359,7 @@ export default function SettingPage() {
           placeholder="Enter worldcoin ID"
         />
         <button
-          onClick={revokeAttestation}
+          onClick={() => revokeAttestation(revokeConfirmation, worldcoinId)}
           className="bg-red-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Revoke Attestation
