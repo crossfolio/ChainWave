@@ -62,7 +62,6 @@ export default function CreateAccountDialog({
         method: 'personal_sign',
         params: [message, account],
       });
-
       setIsMessageSigned(true);
 
       const attestationData = {

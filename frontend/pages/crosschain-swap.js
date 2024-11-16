@@ -1,4 +1,3 @@
-// pages/crosschain-swap.js
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import {
@@ -9,42 +8,38 @@ import {
 export default function CrossChainSwapPage() {
   const [fromChain, setFromChain] = useState('ethereum');
   const [toChain, setToChain] = useState('arbitrum');
-  const [fromToken, setFromToken] = useState('');
-  const [toToken, setToToken] = useState('');
+  const [fromToken, setFromToken] = useState('LINK');
+  const [toToken, setToToken] = useState('UNI');
   const [amount, setAmount] = useState(0);
+  const [convertedAmount, setConvertedAmount] = useState(0);
+  const [gasFee, setGasFee] = useState(0);
   const [swapStatus, setSwapStatus] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
 
   const initiateSwap = async () => {
     try {
-      if (!fromToken || !toToken || amount <= 0) {
-        alert('請輸入有效的代幣和數量');
+      if (amount <= 0) {
+        alert('Please enter a valid quantity.');
         return;
       }
 
-      // 檢查是否存在 Web3 provider (MetaMask)
       if (!window.ethereum) {
-        alert('請安裝 MetaMask 以進行交易');
+        alert('Please install MetaMask to proceed with transactions.');
         return;
       }
 
-      setSwapStatus('正在發起跨鏈交換，請稍候...');
+      setSwapStatus('Initiating cross-chain swap, please wait…');
+      setShowError(false);
+      setFadeOut(false);
 
-      // 使用 ethers.js 設置 provider 和 signer
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []); // 請求授權
+      await provider.send('eth_requestAccounts', []);
       const signer = provider.getSigner();
 
-      // 初始化跨鏈交換合約
-      const crossChainSwapContract = new ethers.Contract(
-        contractAddress,
-        contractABI,
-        signer,
-      );
-
-      // 將數量轉換為合約格式（假設 token 精度為 18 位）
+      const crossChainSwapContract = new ethers.Contract(contractAddress, contractABI, signer);
       const tokenAmount = ethers.utils.parseUnits(amount.toString(), 18);
 
-      // 調用合約中的交換方法
       const tx = await crossChainSwapContract.swapTokensAcrossChains(
         fromChain,
         toChain,
@@ -53,66 +48,145 @@ export default function CrossChainSwapPage() {
         tokenAmount,
       );
 
-      setSwapStatus('交易發起中，等待確認中...');
+      setSwapStatus('Transaction initiated, awaiting confirmation…');
 
-      // 等待交易被確認
       const receipt = await tx.wait();
 
-      setSwapStatus(`交換成功: 交易哈希 ${receipt.transactionHash}`);
+      const estimatedConvertedAmount = amount * 0.95;
+      const estimatedGasFee = 0.005;
+
+      setConvertedAmount(estimatedConvertedAmount);
+      setGasFee(estimatedGasFee);
+
+      setSwapStatus(`Swap successful: Transaction hash ${receipt.transactionHash}`);
     } catch (error) {
-      console.error('交換失敗', error);
-      setSwapStatus('交換失敗，請稍後重試');
+      console.error('Swap failed.', error);
+      setSwapStatus('Swap failed, please try again later.');
+      setShowError(true);
+
+      setTimeout(() => {
+        setFadeOut(true);
+        setTimeout(() => {
+          setShowError(false);
+        }, 1000);
+      }, 2000);
     }
   };
 
   return (
-    <div className="cross-chain-swap-page">
-      <h2> CrossChain - Swap </h2>
-      <div className="swap-section">
-        <label htmlFor="fromChain"> From Chain A: </label>
-        <select
-          value={fromChain}
-          onChange={(e) => setFromChain(e.target.value)}
-          id="fromChain"
-        >
-          <option value="ethereum"> Ethereum </option>
-          <option value="arbitrum"> Arbitrum </option>
-        </select>
-        <label htmlFor="toChain"> To Chain B: </label>
-        <select
-          value={toChain}
-          onChange={(e) => setToChain(e.target.value)}
-          id="toChain"
-        >
-          <option value="arbitrum"> Arbitrum </option>
-          <option value="ethereum"> Ethereum </option>
-        </select>
-        <label htmlFor="fromToken"> From Token A: </label>
-        <input
-          type="text"
-          value={fromToken}
-          onChange={(e) => setFromToken(e.target.value)}
-          id="fromToken"
-        />
-        <label htmlFor="toToken"> To Token B: </label>
-        <input
-          type="text"
-          value={toToken}
-          onChange={(e) => setToToken(e.target.value)}
-          id="toToken"
-        />
-        <label htmlFor="amount"> Amount: </label>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-          id="amount"
-        />
-        <button onClick={initiateSwap}> Swap </button>
+    <div className="w-full min-h-screen bg-gray-50 p-8">
+      <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">Cross-Chain Swap</h2>
+
+      <div className="bg-white p-8 rounded-lg shadow-md mx-auto w-full max-w-lg">
+        <div className="mb-6">
+          <label htmlFor="fromChain" className="block text-sm font-medium text-gray-700">
+            From Chain
+          </label>
+          <select
+            value={fromChain}
+            onChange={(e) => setFromChain(e.target.value)}
+            id="fromChain"
+            className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="ethereum">Ethereum</option>
+            <option value="arbitrum">Arbitrum</option>
+          </select>
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="toChain" className="block text-sm font-medium text-gray-700">
+            To Chain
+          </label>
+          <select
+            value={toChain}
+            onChange={(e) => setToChain(e.target.value)}
+            id="toChain"
+            className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="arbitrum">Arbitrum</option>
+            <option value="ethereum">Ethereum</option>
+          </select>
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="fromToken" className="block text-sm font-medium text-gray-700">
+            From Token
+          </label>
+          <select
+            value={fromToken}
+            onChange={(e) => setFromToken(e.target.value)}
+            id="fromToken"
+            className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="LINK">LINK</option>
+            <option value="UNI">UNI</option>
+            <option value="USDC">USDC</option>
+          </select>
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="toToken" className="block text-sm font-medium text-gray-700">
+            To Token
+          </label>
+          <select
+            value={toToken}
+            onChange={(e) => setToToken(e.target.value)}
+            id="toToken"
+            className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="LINK">LINK</option>
+            <option value="UNI">UNI</option>
+            <option value="USDC">USDC</option>
+          </select>
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+            Amount
+          </label>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+            id="amount"
+            className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Enter amount to swap"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          {showError && (
+            <div
+              className={`mr-4 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-md shadow-lg transition-opacity duration-1000 ${fadeOut ? 'opacity-0' : 'opacity-100'
+                }`}
+            >
+              <p className="text-sm">Swap failed, please try again later.</p>
+            </div>
+          )}
+
+          <button
+            onClick={initiateSwap}
+            className="bg-blue-500 text-white py-3 px-6 rounded-md font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-auto"
+          >
+            Swap
+          </button>
+        </div>
+
+        {convertedAmount > 0 && (
+          <div className="mt-6 bg-gray-50 p-4 rounded-md shadow-md">
+            <p className="text-gray-700">
+              <strong>Converted Amount:</strong> {convertedAmount} {toToken}
+            </p>
+            <p className="text-gray-700">
+              <strong>Estimated Gas Fee:</strong> {gasFee} ETH
+            </p>
+          </div>
+        )}
       </div>
+
       {swapStatus && (
-        <div className="swap-status">
-          <p>{swapStatus}</p>
+        <div className="bg-white p-6 rounded-lg shadow-md mx-auto w-full max-w-lg mt-10 text-center">
+          <p className="text-lg font-semibold text-gray-700">{swapStatus}</p>
         </div>
       )}
     </div>
