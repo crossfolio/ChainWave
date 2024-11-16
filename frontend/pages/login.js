@@ -2,7 +2,7 @@
 
 import { VerificationLevel, IDKitWidget, useIDKit } from "@worldcoin/idkit";
 import { useRouter } from "next/router";
-import Cookies from "js-cookie";
+import Cookies from "js-cookie"; // 引入 js-cookie 庫來操作 cookie
 
 export default function WorldCoin() {
   const app_id = process.env.NEXT_PUBLIC_WLD_APP_ID;
@@ -14,6 +14,7 @@ export default function WorldCoin() {
     console.log("Verification successful with World ID. Nullifier hash:", result.nullifier_hash);
 
     Cookies.set("isAuthenticated", "true", { expires: 1 });
+    Cookies.set("worldcoinId", result.nullifier_hash, { expires: 1 });
 
     const redirectTo = router.query.redirectTo || "/";
     router.push(redirectTo);

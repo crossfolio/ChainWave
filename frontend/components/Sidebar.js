@@ -1,6 +1,7 @@
-import { FaWallet, FaBell, FaExchangeAlt, FaBars, FaTimes } from 'react-icons/fa';
+import { FaWallet, FaBell, FaExchangeAlt, FaBars, FaTimes, FaCog } from 'react-icons/fa';
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
+import { formatAddress } from '../utils/util';
 
 export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
   const router = useRouter();
@@ -9,6 +10,8 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
     { name: 'Assets', path: '/multi-chain-assets', icon: <FaWallet /> },
     { name: 'Alerts', path: '/notification', icon: <FaBell /> },
     { name: 'X-Swap', path: '/crosschain-swap', icon: <FaExchangeAlt /> },
+    { name: 'Sign-Protocol', path: '/sign-protocol', icon: <FaWallet /> },
+    { name: 'Setting', path: '/setting', icon: <FaCog /> },
   ];
 
   const handleNavigation = (path) => router.push(path);
@@ -18,12 +21,11 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
       className={classNames(
         "fixed top-0 left-0 h-full bg-gray-900 text-white shadow-lg flex flex-col justify-between transition-all duration-300",
         {
-          'w-64': !isCollapsed, // 展開時寬度
-          'w-20': isCollapsed,   // 收合時寬度
+          'w-64': !isCollapsed,
+          'w-20': isCollapsed,
         }
       )}
     >
-      {/* 收合按鈕 */}
       <button
         onClick={toggleSidebar}
         className={classNames(
@@ -34,7 +36,6 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
         {isCollapsed ? <FaBars /> : <FaTimes />}
       </button>
 
-      {/* 導航列表 */}
       <ul className="flex-1 p-4 space-y-2">
         {navLinks.map((link) => (
           <li
@@ -54,12 +55,13 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
         ))}
       </ul>
 
-      {/* 帳戶資訊 */}
       <div className="p-4 border-t border-gray-700 text-center text-sm text-gray-400">
         {!isCollapsed && (
           <>
             <p>Connected as:</p>
-            <p className="font-semibold truncate">{account || 'Not connected'}</p>
+            <p className="font-semibold truncate">
+              {account ? formatAddress(account) : 'Not connected'}
+            </p>
           </>
         )}
       </div>
