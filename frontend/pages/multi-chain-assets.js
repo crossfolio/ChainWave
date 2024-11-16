@@ -76,7 +76,7 @@ export default function MultiChainAssets() {
         dstChain,
         srcToken,
         destToken
-      })) : 0;
+      })) : [];
 
     simplifiedAlarms.push({
       symbol: selectedToken.symbol,

@@ -172,6 +172,7 @@ export class SwapService {
     srcToken: string,
     destToken: string,
   ) {
+    console.log(srcChain, dstChain, srcToken, destToken)
     const {
       rpcURL: departureRpcURL,
       contractAddress: srcAutoSwapContractAddress,
@@ -210,7 +211,7 @@ export class SwapService {
         3000,
         60,
         ethers.ZeroAddress,
-        -ethers.parseEther('0.000001'),
+        -ethers.parseEther('0.00001'),
         false,
         '0x',
         3,
@@ -269,7 +270,7 @@ export class SwapService {
         3000,
         60,
         ethers.ZeroAddress,
-        -ethers.parseEther('0.000001'),
+        -ethers.parseEther('0.00001'),
         false,
         '0x',
         walletAddress
