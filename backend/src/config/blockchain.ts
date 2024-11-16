@@ -13,8 +13,10 @@ export const contract_ABI = {
     // Write Functions
     'function singleChainSwap(address token0, address token1, uint24 fee, int24 tickSpacing, address hookAddr, int256 amountSpecified, bool zeroForOne, bytes memory hookData) public payable',
     'function multiChainSwap(address token0, address token1, uint24 fee, int24 tickSpacing, address hookAddr, int256 amountSpecified, bool zeroForOne, bytes memory hookData, uint32 destinationDomain, address destinationRecipient) public payable',
+    'function autoSingleChainSwap(address token0, address token1, uint24 fee, int24 tickSpacing, address hookAddr, int256 amountSpecified, bool zeroForOne, bytes memory hookData, address user) public',
+    'function autoMultiChainSwap(address token0, address token1, uint24 fee, int24 tickSpacing, address hookAddr, int256 amountSpecified, bool zeroForOne, bytes memory hookData, uint32 destinationDomain, address destinationRecipient, address user) public',
     'function destinationUSDC(bytes calldata messageBytes, bytes calldata attestationSignature, address user) public',
-    'function destinationUSDCAndSwap(bytes calldata messageBytes, bytes calldata attestationSignature, address token0, address token1, uint24 fee, int24 tickSpacing, address hookAddr, bool zeroForOne, bytes memory hookData, address user)',
+    'function destinationUSDCAndSwap(bytes calldata messageBytes, bytes calldata attestationSignature, address token0, address token1, uint24 fee, int24 tickSpacing, address hookAddr, bool zeroForOne, bytes memory hookData, address user)'
   ],
 }
 
