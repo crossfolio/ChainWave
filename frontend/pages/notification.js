@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 export default function NotificationList() {
-  // 初始化兩筆假資料
   const [notifications, setNotifications] = useState([
     { symbol: 'ETH', price: '1500', condition: 'greater' },
     { symbol: 'BTC', price: '30000', condition: 'less' },
