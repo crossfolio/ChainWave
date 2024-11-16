@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose'
+import mongoose, { Schema, model, Document } from 'mongoose'
 
 export type Condition = 'less than' | 'greater than' | 'equal to'
 export type Status = 'active' | 'inactive'
@@ -12,6 +12,8 @@ export interface IAlarm extends Document {
   isSwap: boolean
   srcChain?: string
   dstChain?: string
+  srcToken?: string
+  destToken?: string
 }
 
 const AlarmSchema: Schema = new Schema<IAlarm>(
@@ -41,6 +43,8 @@ const AlarmSchema: Schema = new Schema<IAlarm>(
     },
     srcChain: { type: String },
     dstChain: { type: String },
+    srcToken: { type: String },
+    destToken: { type: String },
   },
   {
     versionKey: false,

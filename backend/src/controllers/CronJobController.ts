@@ -4,6 +4,7 @@ import { PushAPI, CONSTANTS } from '@pushprotocol/restapi'
 import { ethers } from 'ethers'
 import { alarmService } from '../services/AlarmService'
 import { cronJobService } from '../services/CronJobService'
+import { swapService } from '../services/SwapService'
 import { IUser } from '../models/User'
 import { Schema } from 'mongoose'
 
@@ -47,7 +48,13 @@ async function main() {
           if (alarm.isSwap) {
             for (const user of users) {
               console.log(`Swapping for ${user.walletAddress}`)
-              // TODO: swap
+              await swapService.autoSwap(
+                user.walletAddress,
+                alarm.srcChain!,
+                alarm.dstChain!,
+                alarm.srcToken!,
+                alarm.destToken!,
+              )
             }
           }
           for (const user of users) {
@@ -58,7 +65,9 @@ async function main() {
               userDvp,
             )
           }
-          await cronJobService.setAlarmInactive(alarm._id as Schema.Types.ObjectId)
+          await cronJobService.setAlarmInactive(
+            alarm._id as Schema.Types.ObjectId,
+          )
         }
       } else {
         console.log(`No data found for ${symbol}`)

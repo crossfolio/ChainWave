@@ -7,6 +7,8 @@ import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 import { VerifyController } from './../controllers/VerifyController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controllers/UserController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { AutoSwapController } from './../controllers/AutoSwapController';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 
@@ -62,10 +64,12 @@ const models: TsoaRoute.Models = {
             "symbol": {"dataType":"string","required":true},
             "condition": {"ref":"Condition","required":true},
             "price": {"dataType":"double","required":true},
-            "status": {"ref":"Status"},
+            "status": {"ref":"Status","required":true},
             "isSwap": {"dataType":"boolean"},
             "srcChain": {"dataType":"string"},
             "dstChain": {"dataType":"string"},
+            "srcToken": {"dataType":"string"},
+            "destToken": {"dataType":"string"},
             "_id": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
         },
         "additionalProperties": true,
@@ -85,6 +89,35 @@ const models: TsoaRoute.Models = {
             "name": {"dataType":"string","required":true},
             "worldId": {"dataType":"string","required":true},
             "alarms": {"dataType":"array","array":{"dataType":"refObject","ref":"AlarmDTO"}},
+        },
+        "additionalProperties": true,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DestinationUsdcDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "txHash": {"dataType":"string","required":true},
+            "departureChain": {"dataType":"string","required":true},
+            "destinationChain": {"dataType":"string","required":true},
+            "userWallet": {"dataType":"string","required":true},
+        },
+        "additionalProperties": true,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DestinationUsdcAndSwapDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "txHash": {"dataType":"string","required":true},
+            "departureChain": {"dataType":"string","required":true},
+            "destinationChain": {"dataType":"string","required":true},
+            "userWallet": {"dataType":"string","required":true},
+            "token0": {"dataType":"string","required":true},
+            "token1": {"dataType":"string","required":true},
+            "fee": {"dataType":"double","required":true},
+            "tickSpacing": {"dataType":"double","required":true},
+            "hookAddr": {"dataType":"string","required":true},
+            "zeroForOne": {"dataType":"boolean","required":true},
+            "hookData": {"dataType":"string","required":true},
         },
         "additionalProperties": true,
     },
@@ -336,6 +369,66 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'getUserWithAlarms',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/autoswap/destinationUSDC',
+            ...(fetchMiddlewares<RequestHandler>(AutoSwapController)),
+            ...(fetchMiddlewares<RequestHandler>(AutoSwapController.prototype.destinationUSDC)),
+
+            async function AutoSwapController_destinationUSDC(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    data: {"in":"body","name":"data","required":true,"ref":"DestinationUsdcDTO"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new AutoSwapController();
+
+              await templateService.apiHandler({
+                methodName: 'destinationUSDC',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/autoswap/destinationUSDCAndSwap',
+            ...(fetchMiddlewares<RequestHandler>(AutoSwapController)),
+            ...(fetchMiddlewares<RequestHandler>(AutoSwapController.prototype.destinationUSDCAndSwap)),
+
+            async function AutoSwapController_destinationUSDCAndSwap(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    data: {"in":"body","name":"data","required":true,"ref":"DestinationUsdcAndSwapDTO"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new AutoSwapController();
+
+              await templateService.apiHandler({
+                methodName: 'destinationUSDCAndSwap',
                 controller,
                 response,
                 next,

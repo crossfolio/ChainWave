@@ -21,7 +21,9 @@ export function sendError<T>(payload?: T): ResponseErrorWithData<T> {
   return Object.assign(response, payload)
 }
 
-export function sendClientError<T>(message: string = "client error"):  ResponseErrorWithData<T> {
+export function sendClientError<T>(
+  message: string = 'client error',
+): ResponseErrorWithData<T> {
   const response: ResponseModel = {
     code: 400,
     msg: message,

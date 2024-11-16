@@ -86,6 +86,19 @@ export class UserController extends Controller {
     @Path() wallet_address: string,
     @Body() alarmsData: AlarmDTO[],
   ): Promise<ResponseModel> {
+    for (const alarm of alarmsData) {
+      if (
+        alarm.isSwap &&
+        (!alarm.srcChain || !alarm.dstChain) &&
+        (!alarm.srcToken || !alarm.destToken)
+      ) {
+        this.setStatus(400)
+        return sendError({
+          code: 400,
+          msg: 'srcChain and dstChain are required for swap alarms',
+        })
+      }
+    }
     try {
       const user = await userService.updateUserAlarms(
         wallet_address,
