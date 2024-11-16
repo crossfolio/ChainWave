@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 import { queryAttestations } from './signProtocol';
 import { ethers } from 'ethers';
+import { getUserInfo } from './util';
 
 export const connectMetaMask = async (
   setAccount,
@@ -32,6 +33,13 @@ export const connectMetaMask = async (
       localStorage.setItem('account', newAccount);
       localStorage.setItem('isAuthenticated', 'true');
       console.log('Verified successfully');
+      const userInfo = await getUserInfo(newAccount);
+      if (userInfo && userInfo.name) {
+        console.log('metamask connect success');
+        console.log('User info:', userInfo);
+      } else {
+        showCreateAccountDialog();
+      }
     } else {
       setIsAuthenticated(false);
       console.log('Verification failed');
