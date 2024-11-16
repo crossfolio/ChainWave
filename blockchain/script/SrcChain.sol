@@ -12,6 +12,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract SrcChainScript is Script {
     address public USDC_ETH_CONTRACT_ADDRESS =
         0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
+    address public UNI_ETH_CONTRACT_ADDRESS =
+        0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
     address public ETH_TOKEN_MESSENGER_CONTRACT_ADDRESS =
         0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5;
     address public ETH_TOKEN_MESSAGE_TRANSMITTER_CONTRACT_ADDRESS =
@@ -28,6 +30,15 @@ contract SrcChainScript is Script {
         uint32 destinationDomain = 3;
         address destinationRecipient = address(0x123);
 
+        address token0 = USDC_ETH_CONTRACT_ADDRESS;
+        address token1 = UNI_ETH_CONTRACT_ADDRESS;
+        uint24 fee = 3000;
+        int24 tickSpacing = 60;
+        address hookAddr = zeroAddress;
+        bool zeroForOne = false;
+        int256 amountSpecified = -0.00001 ether;
+        bytes memory hookData = new bytes(0); // 0x
+
         vm.startBroadcast();
 
         ChainWave chainWave = new ChainWave(
@@ -37,14 +48,35 @@ contract SrcChainScript is Script {
             USDC_ETH_CONTRACT_ADDRESS
         );
 
-        IERC20(USDC_ETH_CONTRACT_ADDRESS).approve(
-            address(chainWave),
-            type(uint256).max
-        );
+        IERC20(token1).approve(address(chainWave), type(uint256).max);
 
-        chainWave.departureUSDC(
-            user,
-            100000,
+        // chainWave.departureUSDC(
+        //     user,
+        //     100000,
+        //     destinationDomain,
+        //     destinationRecipient
+        // );
+
+        // chainWave.singleChainSwap(
+        //     token0,
+        //     token1,
+        //     fee,
+        //     tickSpacing,
+        //     hookAddr,
+        //     amountSpecified,
+        //     zeroForOne,
+        //     hookData
+        // );
+
+        chainWave.multiChainSwap(
+            token0,
+            token1,
+            fee,
+            tickSpacing,
+            hookAddr,
+            amountSpecified,
+            zeroForOne,
+            hookData,
             destinationDomain,
             destinationRecipient
         );
