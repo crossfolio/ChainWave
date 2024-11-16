@@ -6,20 +6,20 @@ import {
   FaBars,
   FaTimes,
   FaCog,
-} from "react-icons/fa";
-import { useState, useEffect } from "react";
-import classNames from "classnames";
-import { useRouter } from "next/router";
-import { formatAddress } from "../utils/util";
+} from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import classNames from 'classnames';
+import { useRouter } from 'next/router';
+import { formatAddress } from '../utils/util';
 
 export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
   const router = useRouter();
 
   const navLinks = [
-    { name: "Assets", path: "/multi-chain-assets", icon: <FaWallet /> },
-    { name: "Alerts", path: "/notification", icon: <FaBell /> },
-    { name: "X-Swap", path: "/crosschain-swap", icon: <FaExchangeAlt /> },
-    { name: "Setting", path: "/setting", icon: <FaCog /> },
+    { name: 'Assets', path: '/multi-chain-assets', icon: <FaWallet /> },
+    { name: 'Alerts', path: '/notification', icon: <FaBell /> },
+    { name: 'X-Swap', path: '/crosschain-swap', icon: <FaExchangeAlt /> },
+    { name: 'Setting', path: '/setting', icon: <FaCog /> },
   ];
 
   const handleNavigation = (path) => router.push(path);
@@ -45,18 +45,18 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
   return (
     <nav
       className={classNames(
-        "fixed top-0 left-0 h-full bg-gray-900 text-white shadow-lg flex flex-col justify-between transition-all duration-300",
+        'fixed top-0 left-0 h-full bg-gray-900 text-white shadow-lg flex flex-col justify-between transition-all duration-300',
         {
-          "w-64": !isCollapsed,
-          "w-20": isCollapsed,
-        }
+          'w-64': !isCollapsed,
+          'w-20': isCollapsed,
+        },
       )}
     >
       <button
         onClick={toggleSidebar}
-        className={classNames("p-3 text-white hover:bg-gray-800 transition", {
-          "self-end mr-4": !isCollapsed,
-          "self-center": isCollapsed,
+        className={classNames('p-3 text-white hover:bg-gray-800 transition', {
+          'self-end mr-4': !isCollapsed,
+          'self-center': isCollapsed,
         })}
       >
         {isCollapsed ? <FaBars /> : <FaTimes />}
@@ -68,11 +68,11 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
             key={link.path}
             onClick={() => handleNavigation(link.path)}
             className={classNames(
-              "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
+              'flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors',
               {
-                "bg-gray-700": router.pathname === link.path,
-                "hover:bg-gray-800": router.pathname !== link.path,
-              }
+                'bg-gray-700': router.pathname === link.path,
+                'hover:bg-gray-800': router.pathname !== link.path,
+              },
             )}
           >
             <span className="text-lg">{link.icon}</span>
@@ -87,9 +87,7 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
             <p>Connected as:</p>
             <p className="font-semibold truncate">
 
-              {account
-                ? (ensName || formatAddress(account))
-                : 'Not connected'}
+              {account ? ensName || formatAddress(account) : 'Not connected'}
             </p>
           </div>
         )}

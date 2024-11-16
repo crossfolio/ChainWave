@@ -1,7 +1,10 @@
 // pages/crosschain-swap.js
 import { useState } from 'react';
 import { ethers } from 'ethers';
-import { contractAddress, contractABI } from '../constants/crossChainSwapContract';
+import {
+  contractAddress,
+  contractABI,
+} from '../constants/crossChainSwapContract';
 
 export default function CrossChainSwapPage() {
   const [fromChain, setFromChain] = useState('ethereum');
@@ -32,7 +35,11 @@ export default function CrossChainSwapPage() {
       const signer = provider.getSigner();
 
       // 初始化跨鏈交換合約
-      const crossChainSwapContract = new ethers.Contract(contractAddress, contractABI, signer);
+      const crossChainSwapContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer,
+      );
 
       // 將數量轉換為合約格式（假設 token 精度為 18 位）
       const tokenAmount = ethers.utils.parseUnits(amount.toString(), 18);
@@ -43,7 +50,7 @@ export default function CrossChainSwapPage() {
         toChain,
         fromToken,
         toToken,
-        tokenAmount
+        tokenAmount,
       );
 
       setSwapStatus('交易發起中，等待確認中...');
@@ -63,12 +70,20 @@ export default function CrossChainSwapPage() {
       <h2> CrossChain - Swap </h2>
       <div className="swap-section">
         <label htmlFor="fromChain"> From Chain A: </label>
-        <select value={fromChain} onChange={(e) => setFromChain(e.target.value)} id="fromChain">
+        <select
+          value={fromChain}
+          onChange={(e) => setFromChain(e.target.value)}
+          id="fromChain"
+        >
           <option value="ethereum"> Ethereum </option>
           <option value="arbitrum"> Arbitrum </option>
         </select>
         <label htmlFor="toChain"> To Chain B: </label>
-        <select value={toChain} onChange={(e) => setToChain(e.target.value)} id="toChain">
+        <select
+          value={toChain}
+          onChange={(e) => setToChain(e.target.value)}
+          id="toChain"
+        >
           <option value="arbitrum"> Arbitrum </option>
           <option value="ethereum"> Ethereum </option>
         </select>

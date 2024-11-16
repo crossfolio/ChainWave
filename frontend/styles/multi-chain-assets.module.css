@@ -1,12 +1,11 @@
 .multi-chain-assets {
-    padding: 20px;
-  }
-  .multi-chain-assets h2 {
-    margin-bottom: 20px;
-  }
-  .multi-chain-assets input,
-  .multi-chain-assets select {
-    margin: 10px 0;
-    padding: 5px;
-  }
-  
+  padding: 20px;
+}
+.multi-chain-assets h2 {
+  margin-bottom: 20px;
+}
+.multi-chain-assets input,
+.multi-chain-assets select {
+  margin: 10px 0;
+  padding: 5px;
+}

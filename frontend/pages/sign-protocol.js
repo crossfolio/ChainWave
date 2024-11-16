@@ -1,31 +1,30 @@
-import { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import Header from "../components/Header";
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import Header from '../components/Header';
 import {
   SignProtocolClient,
   SpMode,
   EvmChains,
   IndexService,
   decodeOnChainData,
-} from "@ethsign/sp-sdk";
+} from '@ethsign/sp-sdk';
 
 export default function SignProtocol({ account }) {
-  const [deviceId, setDeviceId] = useState("");
-  const [deviceSignature, setDeviceSignature] = useState("");
-  const [verifyDeviceRes, setVerifyDeviceRes] = useState("");
-  const [schemaId, setSchemaId] = useState("");
-  const [schemaName, setSchemaName] = useState("");
+  const [deviceId, setDeviceId] = useState('');
+  const [deviceSignature, setDeviceSignature] = useState('');
+  const [verifyDeviceRes, setVerifyDeviceRes] = useState('');
+  const [schemaId, setSchemaId] = useState('');
+  const [schemaName, setSchemaName] = useState('');
   const [schemaData, setSchemaData] = useState(
-    '[{"name":"worldcoinSign","type":"string","required":true}]'
+    '[{"name":"worldcoinSign","type":"string","required":true}]',
   );
   const [query, setQuery] = useState(null);
   const [queryResults, setQueryResults] = useState([]);
   const [querySchemaId, setQuerySchemaId] = useState(
-    "onchain_evm_421614_0x14e"
+    'onchain_evm_421614_0x14e',
   );
-  const [attestationId, setAttestationId] = useState("");
-
-  const [worldcoinId, setWorldcoinId] = useState("");
+  const [attestationId, setAttestationId] = useState('');
+  const [worldcoinId, setWorldcoinId] = useState('');
 
   useEffect(() => {
     if (!account) connectWallet();
@@ -33,9 +32,9 @@ export default function SignProtocol({ account }) {
 
   const connectWallet = async () => {
     if (window.ethereum) {
-      await window.ethereum.request({ method: "eth_requestAccounts" });
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
     } else {
-      alert("MetaMask is not installed");
+      alert('MetaMask is not installed');
     }
   };
 
@@ -45,7 +44,7 @@ export default function SignProtocol({ account }) {
 
   const createSchema = async () => {
     if (!window.ethereum || !account) {
-      alert("MetaMask is not installed or not connected");
+      alert('MetaMask is not installed or not connected');
       return;
     }
     try {
@@ -53,20 +52,20 @@ export default function SignProtocol({ account }) {
         name: schemaName,
         data: JSON.parse(schemaData),
         signatureRules: {
-          method: "eth_sign",
-          fieldsToSign: ["worldcoinId"],
+          method: 'eth_sign',
+          fieldsToSign: ['worldcoinId'],
         },
       });
-      console.log("Schema created successfully:", createSchemaRes);
+      console.log('Schema created successfully:', createSchemaRes);
       setSchemaId(createSchemaRes.schemaId);
     } catch (error) {
-      console.error("Failed to create schema:", error);
+      console.error('Failed to create schema:', error);
     }
   };
 
   const getSchema = async () => {
     if (!window.ethereum || !account || !schemaId) {
-      alert("Please ensure MetaMask is connected and enter a schema id");
+      alert('Please ensure MetaMask is connected and enter a schema id');
       return;
     }
     try {
@@ -79,26 +78,20 @@ export default function SignProtocol({ account }) {
   };
 
   const createAttestation = async () => {
-    if (
-      !window.ethereum ||
-      !account ||
-      !schemaId ||
-      !worldcoinId
-    ) {
+    if (!window.ethereum || !account || !schemaId || !worldcoinId) {
       alert(
-        "Please ensure all fields are filled in, and MetaMask is connected"
+        'Please ensure all fields are filled in, and MetaMask is connected',
       );
       return;
     }
 
     try {
-
       const message = JSON.stringify({
         worldcoinId: worldcoinId,
       });
 
       const signedMessage = await window.ethereum.request({
-        method: "personal_sign",
+        method: 'personal_sign',
         params: [message, account],
       });
 
@@ -110,68 +103,67 @@ export default function SignProtocol({ account }) {
         schemaId: schemaId,
         data: attestationData,
       });
-      console.log("Attestation Created:", attestationRes);
+      console.log('Attestation Created:', attestationRes);
     } catch (error) {
-      console.error("Failed to create attestation:", error);
+      console.error('Failed to create attestation:', error);
     }
   };
 
   const revokeAttestation = async () => {
     if (!attestationId) {
-      alert("Please enter a valid attestation ID to revoke");
+      alert('Please enter a valid attestation ID to revoke');
       return;
     }
 
     try {
       const response = await client.revokeAttestation(attestationId, {
-        reason: "User requested revocation",
+        reason: 'User requested revocation',
       });
-      console.log("Attestation Revoked:", response);
-      alert("Attestation has been successfully revoked.");
+      console.log('Attestation Revoked:', response);
+      alert('Attestation has been successfully revoked.');
     } catch (error) {
-      console.error("Failed to revoke attestation:", error);
-      alert("Failed to revoke attestation. Check the console for details.");
+      console.error('Failed to revoke attestation:', error);
+      alert('Failed to revoke attestation. Check the console for details.');
     }
   };
 
   const queryAttestations = async () => {
     if (!querySchemaId) {
-      alert("Please enter a schema id to query attestations");
+      alert('Please enter a schema id to query attestations');
       return;
     }
 
     try {
-      const indexService = new IndexService("testnet");
-      console.log("Querying attestations with schemaId:", querySchemaId);
+      const indexService = new IndexService('testnet');
+      console.log('Querying attestations with schemaId:', querySchemaId);
 
       const response = await indexService.queryAttestationList({
         schemaId: querySchemaId,
         page: 1,
-        mode: "onchain",
+        mode: 'onchain',
       });
-      // const response = await indexService.querySchema("onchain_evm_11155111_0x2c3");
-      console.log("Query response:", response);
+      console.log('Query response:', response);
 
       const att = response.rows[0].data;
 
       const res = decodeOnChainData(
         att,
-        JSON.parse(schemaData)
+        JSON.parse(schemaData),
       );
 
-      console.log("Decoded data:", res);
+      console.log('Decoded data:', res);
 
       if (response) {
-        console.log("Attestations found:", res);
+        console.log('Attestations found:', res);
         setQueryResults(res);
       } else {
         console.error(
-          "Error querying attestations:",
-          response ? response.message : "Unknown error"
+          'Error querying attestations:',
+          response ? response.message : 'Unknown error',
         );
       }
     } catch (error) {
-      console.error("Failed to query attestations:", error.message || error);
+      console.error('Failed to query attestations:', error.message || error);
     }
   };
 

@@ -1,50 +1,12 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
-const fetchAssetsFromBlockscout = async (chain, account) => {
-  const baseUrl =
-    chain === 'sepolia'
-      ? 'https://eth-sepolia.blockscout.com/api'
-      : 'https://arbitrum-sepolia.blockscout.com/api';
-
-  const [tokenResponse, nativeResponse] = await Promise.all([
-    fetch(`${baseUrl}?module=account&action=tokenlist&address=${account}`),
-    fetch(`${baseUrl}?module=account&action=balance&address=${account}`)
-  ]);
-
-  if (!tokenResponse.ok || !nativeResponse.ok) {
-    throw new Error(`Failed to fetch data from ${chain} Blockscout`);
-  }
-
-  const tokens = (await tokenResponse.json()).result || [];
-  const native = (await nativeResponse.json()).result || '0';
-
-  return { tokens, native };
-};
-
-const calculateTokenAmount = (balance, decimals) => {
-  return parseFloat(balance) / Math.pow(10, decimals);
-};
-
-const getPrices = async (cryptocurrencies) => {
-  // 逐一查詢每個加密貨幣的價格
-  const pricePromises = cryptocurrencies.map(async (crypto) => {
-    try {
-      // 發送請求到本地 API 路由
-      const response = await axios.get(`/api/cryptocurrency?symbol=${crypto.symbol}`);
-
-      // 更新該 crypto 的價格
-      crypto.price = response.data.data[crypto.symbol].quote.USD.price;
-    } catch (error) {
-      console.error(`Error fetching price for ${crypto.symbol}:`, error);
-      crypto.price = 0; // 若查詢失敗則設為 0 或其他預設值
-    }
-  });
-
-  // 等待所有請求完成
-  await Promise.all(pricePromises);
-  return cryptocurrencies;
-};
+import {
+  fetchAssetsFromBlockscout,
+  calculateTokenAmount,
+  getPrices,
+} from '../utils/getTokenList';
+import { chains } from '../utils/chainsConfig';
 
 export default function MultiChainAssets() {
   const [account, setAccount] = useState('');
@@ -53,46 +15,76 @@ export default function MultiChainAssets() {
   const [error, setError] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState({ symbol: '', price: '' });
-  const [notification, setNotification] = useState({ condition: 'greater', price: '' });
+  const [notification, setNotification] = useState({
+    condition: 'greater',
+    price: '',
+    autoSwap: false,
+    autoSwapChain: '',
+    autoSwapToken: '',
+    autoSwapSourceChains: [],
+  });
+  const [viewMode, setViewMode] = useState('aggregated');
 
-  const handleAccountChange = (e) => setAccount(e.target.value);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum
+        .request({ method: 'eth_requestAccounts' })
+        .then((accounts) => {
+          setAccount(accounts[0]);
+        })
+        .catch((error) => {
+          console.error('Error connecting to MetaMask:', error);
+        });
+    } else {
+      alert('Please install MetaMask to connect your wallet.');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (account) {
+      handleFetchAssets();
+    }
+  }, [account, router.pathname]);
 
   const handleFetchAssets = async () => {
     if (account) {
       setLoading(true);
       setError(null);
       try {
-        const [sepoliaData, arbitrumData] = await Promise.all([
-          fetchAssetsFromBlockscout('sepolia', account),
-          fetchAssetsFromBlockscout('arbitrum', account)
-        ]);
+        const fetchedData = await Promise.all(
+          chains.map((chain) => fetchAssetsFromBlockscout(chain.name, account)),
+        );
 
-        const blockscoutData = { sepolia: sepoliaData, arbitrum: arbitrumData };
+        const blockscoutData = chains.reduce((acc, chain, index) => {
+          acc[chain.name] = fetchedData[index];
+          return acc;
+        }, {});
 
-        // 收集所有代幣 symbol，用於查詢價格
         let tokensToFetch = [];
-        ['sepolia', 'arbitrum'].forEach((chain) => {
-          blockscoutData[chain].tokens.forEach((token) => {
+        chains.forEach((chain) => {
+          blockscoutData[chain.name].tokens.forEach((token) => {
             if (!['NameWrapper', 'MyCollection'].includes(token.name)) {
               tokensToFetch.push({ symbol: token.symbol });
             }
           });
         });
 
-        // 獲取實時價格
         const tokensWithPrices = await getPrices(tokensToFetch);
-        // 更新 blockscoutData 中代幣的價格
-        const updatedData = { sepolia: sepoliaData, arbitrum: arbitrumData };
-        ['sepolia', 'arbitrum'].forEach((chain) => {
-          updatedData[chain].tokens.forEach((token) => {
-            const tokenWithPrice = tokensWithPrices.find((t) => t.symbol === token.symbol);
+        const updatedData = { ...blockscoutData };
+        chains.forEach((chain) => {
+          updatedData[chain.name].tokens.forEach((token) => {
+            const tokenWithPrice = tokensWithPrices.find(
+              (t) => t.symbol === token.symbol,
+            );
             if (tokenWithPrice) {
               token.price = tokenWithPrice.price;
             }
           });
         });
 
-        setBlockscoutData(updatedData); // 更新狀態中的 blockscoutData
+        setBlockscoutData(updatedData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -103,23 +95,18 @@ export default function MultiChainAssets() {
 
   const aggregateTokens = () => {
     const aggregated = {};
-
-    ['sepolia', 'arbitrum'].forEach((chain) => {
-      blockscoutData[chain]?.tokens.forEach((token) => {
+    chains.forEach((chain) => {
+      blockscoutData[chain.name]?.tokens.forEach((token) => {
         if (['NameWrapper', 'MyCollection'].includes(token.name)) return;
-
         const key = token.symbol;
-
         if (!aggregated[key]) {
           aggregated[key] = { total: 0, details: [], price: token.price || 0 };
         }
-
         const amount = calculateTokenAmount(token.balance, token.decimals);
         aggregated[key].total += amount;
-        aggregated[key].details.push({ chain, amount });
+        aggregated[key].details.push({ chain: chain.displayName, amount });
       });
     });
-
     return aggregated;
   };
 
@@ -132,109 +119,304 @@ export default function MultiChainAssets() {
 
   const closeDialog = () => {
     setIsDialogOpen(false);
-    setNotification({ condition: 'greater', price: '' });
+    setNotification({
+      condition: 'greater',
+      price: '',
+      autoSwap: false,
+      autoSwapChain: '',
+      autoSwapToken: '',
+      autoSwapSourceChains: [],
+    });
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNotification((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setNotification((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
-  const handleSubmit = () => {
+  const handleSourceChainsChange = (e) => {
+    const options = Array.from(e.target.selectedOptions);
+    setNotification((prev) => ({
+      ...prev,
+      autoSwapSourceChains: options.map((option) => option.value),
+    }));
+  };
+
+  const handleSubmit = async () => {
     console.log(`Notification set for ${selectedToken.symbol}:`, notification);
+
+    if (notification.autoSwap && window.ethereum) {
+      try {
+        const message = `Approve auto-swap from source chains: ${notification.autoSwapSourceChains.join(', ')} to target chain: ${notification.autoSwapChain} for ${selectedToken.symbol} to ${notification.autoSwapToken} when the price reaches $${notification.price}.`;
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [message, account],
+        });
+        console.log('Signature:', signature);
+      } catch (error) {
+        console.error('Signature request failed:', error);
+        alert('Signature request failed. Auto-swap will not be activated.');
+      }
+    }
+
     closeDialog();
   };
 
   return (
-    <div className="multi-chain-assets">
-      <h2>Multi-Chain Assets Query</h2>
-      <div className="input-group">
-        <input
-          type="text"
-          id="account"
-          value={account}
-          onChange={handleAccountChange}
-          placeholder="Enter account address"
-        />
+    <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center">
+      <h2 className="text-3xl font-bold text-gray-800 mb-4">
+        Multi-Chain Assets Query
+      </h2>
+      <p className="text-gray-500 mb-6">
+        Track and manage your assets across multiple chains with ease.
+      </p>
+
+      <div className="mt-4">
+        <button
+          onClick={() =>
+            setViewMode(viewMode === 'aggregated' ? 'separate' : 'aggregated')
+          }
+          className="bg-green-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
+        >
+          {viewMode === 'aggregated' ? 'Show Separate' : 'Show Aggregated'}
+        </button>
       </div>
-      <button onClick={handleFetchAssets} disabled={!account}>
-        Fetch Assets
-      </button>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
-      <table className="token-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Symbol</th>
-            <th>Price</th>
-            <th>Total Amount</th>
-            <th>Details</th>
-            <th>Add to Notification</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(aggregatedTokens).map(([symbol, { total, details, price }], index) => (
-            <tr key={symbol}>
-              <td>{index + 1}</td>
-              <td>{symbol}</td>
-              <td>${price.toFixed(2)}</td>
-              <td>{total.toFixed(2)}</td>
-              <td>
-                <details>
-                  <summary>View Details</summary>
-                  <ul>
-                    {details.map((detail, i) => (
-                      <li key={i}>
-                        {detail.chain}: {detail.amount.toFixed(2)}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </td>
-              <td>
-                <button className="notification-btn" onClick={() => openDialog(symbol, price)}>
-                  加入示警清單
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      {loading && (
+        <p className="text-blue-500 text-lg mt-4">Loading assets...</p>
+      )}
+      {error && <p className="text-red-500 text-lg mt-4">Error: {error}</p>}
+
+      {!loading &&
+        !error &&
+        (viewMode === 'aggregated' ? (
+          <table className="w-full max-w-4xl mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
+            <thead>
+              <tr className="bg-blue-500 text-white">
+                <th className="px-4 py-2">#</th>
+                <th className="px-4 py-2">Symbol</th>
+                <th className="px-4 py-2">Price</th>
+                <th className="px-4 py-2">Total Amount</th>
+                <th className="px-4 py-2">Details</th>
+                <th className="px-4 py-2">Add to Notification</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(aggregatedTokens).map(
+                ([symbol, { total, details, price }], index) => (
+                  <tr key={symbol} className="border-b">
+                    <td className="px-4 py-2">{index + 1}</td>
+                    <td className="px-4 py-2 font-semibold">{symbol}</td>
+                    <td className="px-4 py-2">${price.toFixed(2)}</td>
+                    <td className="px-4 py-2">{total}</td>
+                    <td className="px-4 py-2">
+                      <details>
+                        <summary className="text-blue-500 cursor-pointer">
+                          View Details
+                        </summary>
+                        <ul className="pl-4">
+                          {details.map((detail, i) => (
+                            <li key={i} className="text-sm text-gray-600">
+                              {detail.chain}: {detail.amount}
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    </td>
+                    <td className="text-center flex justify-center px-4 py-2">
+                      <button
+                        onClick={() => openDialog(symbol, price)}
+                        className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-200 transition-all"
+                      >
+                        Add Notification
+                      </button>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        ) : (
+          chains.map((chain) => (
+            <div
+              key={chain.name}
+              className="w-full max-w-4xl mt-8 bg-white shadow-lg rounded-lg overflow-hidden mb-6"
+            >
+              <h3 className="bg-blue-500 text-white px-4 py-2 text-lg font-semibold">
+                {chain.displayName}
+              </h3>
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-blue-200 text-blue-700">
+                    <th className="px-4 py-2">#</th>
+                    <th className="px-4 py-2">Symbol</th>
+                    <th className="px-4 py-2">Price</th>
+                    <th className="px-4 py-2">Amount</th>
+                    <th className="px-4 py-2">Add to Notification</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {blockscoutData[chain.name]?.tokens.map((token, index) => (
+                    <tr
+                      key={`${chain.name}-${token.symbol}`}
+                      className="border-b"
+                    >
+                      <td className="px-4 py-2">{index + 1}</td>
+                      <td className="px-4 py-2 font-semibold">
+                        {token.symbol}
+                      </td>
+                      <td className="px-4 py-2">
+                        ${(token.price || 0).toFixed(2)}
+                      </td>
+                      <td className="px-4 py-2">
+                        {calculateTokenAmount(token.balance, token.decimals)}
+                      </td>
+                      <td className="text-center flex justify-center px-4 py-2">
+                        <button
+                          onClick={() =>
+                            openDialog(token.symbol, token.price || 0)
+                          }
+                          className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-200 transition-all"
+                        >
+                          Add Notification
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))
+        ))}
 
       {isDialogOpen && (
-        <div className="dialog-overlay">
-          <div className="dialog">
-            <h3>Set Notification for {selectedToken.symbol}</h3>
-            <p>Current Price: ${selectedToken.price}</p>
-            <div className="input-group">
-              <label>
-                Condition:
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h3 className="text-xl font-bold text-blue-600 mb-4">
+              Set Notification for {selectedToken.symbol}
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Current Price: ${selectedToken.price}
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Condition:
+                </label>
                 <select
                   name="condition"
                   value={notification.condition}
                   onChange={handleInputChange}
+                  className="w-full border rounded-lg p-2"
                 >
                   <option value="greater">Greater than</option>
                   <option value="less">Less than</option>
                 </select>
-              </label>
-            </div>
-            <div className="input-group">
-              <label>
-                Price:
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Price:
+                </label>
                 <input
                   type="number"
                   name="price"
                   value={notification.price}
                   onChange={handleInputChange}
                   placeholder="Enter price"
+                  className="w-full border rounded-lg p-2"
                 />
-              </label>
-            </div>
-            <div className="dialog-buttons">
-              <button onClick={handleSubmit}>Confirm</button>
-              <button onClick={closeDialog}>Cancel</button>
+              </div>
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    name="autoSwap"
+                    checked={notification.autoSwap}
+                    onChange={handleInputChange}
+                    className="form-checkbox"
+                  />
+                  <span className="text-sm text-gray-700">Auto Swap</span>
+                </label>
+              </div>
+              {notification.autoSwap && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Target Chain:
+                    </label>
+                    <select
+                      name="autoSwapChain"
+                      value={notification.autoSwapChain}
+                      onChange={handleInputChange}
+                      className="w-full border rounded-lg p-2"
+                    >
+                      {chains.map((chain) => (
+                        <option key={chain.name} value={chain.name}>
+                          {chain.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Target Token:
+                    </label>
+                    <input
+                      type="text"
+                      name="autoSwapToken"
+                      value={notification.autoSwapToken}
+                      onChange={handleInputChange}
+                      placeholder="Enter target token symbol"
+                      className="w-full border rounded-lg p-2"
+                    />
+                  </div>
+                  {viewMode === 'aggregated' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Source Chains:
+                      </label>
+                      <select
+                        name="autoSwapSourceChains"
+                        value={notification.autoSwapSourceChains}
+                        onChange={handleSourceChainsChange}
+                        className="w-full border rounded-lg p-2"
+                        multiple
+                      >
+                        {chains
+                          .filter(
+                            (chain) =>
+                              chain.name !== notification.autoSwapChain &&
+                              blockscoutData[chain.name]?.tokens?.some(
+                                (token) => token.symbol === selectedToken.symbol
+                              )
+                          )
+                          .map((chain) => (
+                            <option key={chain.name} value={chain.name}>
+                              {chain.displayName}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+              <div className="flex justify-end mt-6 space-x-4">
+                <button
+                  onClick={handleSubmit}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={closeDialog}
+                  className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

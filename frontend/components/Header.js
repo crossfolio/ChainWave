@@ -2,21 +2,56 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import LogoutDialog from './LogoutDialog';
-import { resolveENS, checkMetaMaskAvailability, formatAddress } from '../utils/util';
+import {
+  resolveENS,
+  checkMetaMaskAvailability,
+  formatAddress,
+} from '../utils/util';
 
 export default function Header({ account, onWalletConnected, onLogout }) {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
-    if (account) {
-      const name = 'John Doe';
-      const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(name)}`;
-      setProfileImage(imageUrl);
-    } else {
-      setProfileImage(null);
-    }
+    const fetchUserProfile = async () => {
+      if (account) {
+        try {
+          const savedWorldcoinId = Cookies.get('worldcoinId');
+          if (savedWorldcoinId) {
+            const userInfo = await getUserInfo(savedWorldcoinId);
+            if (userInfo && userInfo.name) {
+              const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(userInfo.name)}`;
+              setProfileImage(imageUrl);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user info:', error);
+        }
+      } else {
+        setProfileImage(null);
+      }
+    };
+
+    fetchUserProfile();
   }, [account]);
+
+  const getUserInfo = async (worldcoinId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/users/${worldcoinId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      return data;
+    } catch (error) {
+      console.error('Error during verification:', error);
+    }
+  };
 
   const connectWallet = async () => {
     if (!checkMetaMaskAvailability()) return;
@@ -57,7 +92,7 @@ export default function Header({ account, onWalletConnected, onLogout }) {
             <img
               src={profileImage}
               alt="Profile"
-              className="w-10 h-10 rounded-full cursor-pointer"
+              className="w-16 h-16 rounded-full cursor-pointer"
               onClick={openLogoutDialog}
             />
           )}
@@ -71,7 +106,13 @@ export default function Header({ account, onWalletConnected, onLogout }) {
         </button>
       )}
 
-      {showLogoutDialog && <LogoutDialog confirmLogout={confirmLogout} cancelLogout={closeLogoutDialog} />}
+      {/* 登出對話框 */}
+      {showLogoutDialog && (
+        <LogoutDialog
+          confirmLogout={confirmLogout}
+          cancelLogout={closeLogoutDialog}
+        />
+      )}
     </div>
   );
 }
