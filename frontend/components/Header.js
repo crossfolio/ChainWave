@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import LogoutDialog from "./LogoutDialog";
-import { resolveENS, checkMetaMaskAvailability, formatAddress } from "../utils/util";
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+import LogoutDialog from './LogoutDialog';
+import { resolveENS, checkMetaMaskAvailability, formatAddress } from '../utils/util';
 
 export default function Header({ account, onWalletConnected, onLogout }) {
   const [showDialog, setShowDialog] = useState(false);
-  const [ensName, setEnsName] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     if (account) {
-      resolveENS(account, setEnsName);
+      const name = 'John Doe';
+      const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(name)}`;
+      setProfileImage(imageUrl);
     } else {
-      setEnsName(null);
+      setProfileImage(null);
     }
   }, [account]);
 
@@ -24,17 +26,17 @@ export default function Header({ account, onWalletConnected, onLogout }) {
       const account = await signer.getAddress();
       onWalletConnected(account);
     } catch (error) {
-      console.error("User denied account access or an error occurred");
+      console.error('User denied account access or an error occurred');
     }
   };
 
   const confirmLogout = async () => {
-    if (typeof onLogout === "function") {
+    if (typeof onLogout === 'function') {
       onLogout();
     }
 
-    localStorage.removeItem("account");
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem('account');
+    localStorage.removeItem('isAuthenticated');
 
     if (!checkMetaMaskAvailability()) return;
 
@@ -48,18 +50,27 @@ export default function Header({ account, onWalletConnected, onLogout }) {
 
   return (
     <div className="fixed top-4 right-4">
-      <button
-        onClick={account ? openDialog : connectWallet}
-        className={`px-4 py-2 rounded-full font-semibold text-white transition ${
-          account ? "button-connected" : "button-notConnected"
-        } shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-      >
-        {account ? ensName || formatAddress(account) : "Connect MetaMask"}
-      </button>
-
-      {showDialog && (
-        <LogoutDialog confirmLogout={confirmLogout} cancelLogout={closeDialog} />
+      {account ? (
+        <div className="flex items-center space-x-2">
+          {profileImage && (
+            <img
+              src={profileImage}
+              alt="Profile"
+              className="w-10 h-10 rounded-full cursor-pointer"
+              onClick={openDialog}
+            />
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={connectWallet}
+          className="px-4 py-2 rounded-full font-semibold text-white transition button-notConnected shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Connect MetaMask
+        </button>
       )}
+
+      {showDialog && <LogoutDialog confirmLogout={confirmLogout} cancelLogout={closeDialog} />}
     </div>
   );
 }

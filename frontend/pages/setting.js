@@ -1,50 +1,42 @@
-import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import { formatAddress } from "../utils/util";
+import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
+import { formatAddress } from '../utils/util';
 
 export default function SettingPage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [username, setUsername] = useState("John Doe");
-  const [worldcoinId, setWorldcoinId] = useState("");
-  const [accountAddress, setAccountAddress] = useState("");
+  const [username, setUsername] = useState('John Doe');
+  const [worldcoinId, setWorldcoinId] = useState('');
+  const [accountAddress, setAccountAddress] = useState(''); // 使用 MetaMask 的帳號地址
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
-    const savedWorldcoinId = Cookies.get("worldcoinId");
+    const savedWorldcoinId = Cookies.get('worldcoinId');
     if (savedWorldcoinId) {
       setWorldcoinId(savedWorldcoinId);
     }
 
     if (window.ethereum) {
       window.ethereum
-        .request({ method: "eth_requestAccounts" })
+        .request({ method: 'eth_requestAccounts' })
         .then((accounts) => {
           setAccountAddress(accounts[0]);
         })
         .catch((error) => {
-          console.error("Error connecting to MetaMask:", error);
+          console.error('Error connecting to MetaMask:', error);
         });
     } else {
       alert("Please install MetaMask to connect your wallet.");
     }
-  }, []);
+
+    const defaultProfileImage = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(username)}`;
+    setProfileImage(defaultProfileImage);
+  }, [username]);
 
   const toggleEditing = () => setIsEditing(!isEditing);
 
   const handleSave = () => {
-    alert("Changes saved!");
+    alert('Changes saved!');
     setIsEditing(false);
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   return (
@@ -54,22 +46,21 @@ export default function SettingPage() {
       <div className="bg-white p-8 rounded-lg shadow-lg mx-auto w-full max-w-4xl">
         <h3 className="text-xl font-semibold text-gray-700 mb-6">Profile Information</h3>
 
+        {/* Profile Image Section */}
         <div className="flex items-center space-x-6 mb-6">
           <div className="relative">
             <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-300">
               {profileImage ? (
                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <span className="flex items-center justify-center text-2xl font-semibold text-gray-500">JD</span>
+                <span className="flex items-center justify-center text-2xl font-semibold text-gray-500">
+                  JD
+                </span>
               )}
             </div>
-            <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer">
-              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-              <span className="text-xs">Edit</span>
-            </label>
           </div>
           <div>
-            <p className="text-gray-600">Profile Picture (Click to change)</p>
+            <p className="text-gray-600">Profile Picture</p>
           </div>
         </div>
 
@@ -96,7 +87,7 @@ export default function SettingPage() {
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700">Account Address</label>
           <p className="text-lg text-gray-800 break-words">
-            {accountAddress ? formatAddress(accountAddress) : "Not connected"}
+            {accountAddress ? formatAddress(accountAddress) : '尚未連接'}
           </p>
         </div>
 
