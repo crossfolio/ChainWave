@@ -148,4 +148,60 @@ contract ChainWave is Ownable2Step {
         uint256 usdcAmount = USDC.balanceOf(address(this));
         result = _transferTokenOut(address(USDC), user, usdcAmount);
     }
+
+    /// @notice Maually swap on the same chain
+    function singleChainSwap(
+        address token0,
+        address token1,
+        uint24 fee,
+        int24 tickSpacing,
+        address hookAddr,
+        int256 amountSpecified,
+        bool zeroForOne,
+        bytes memory hookData
+    ) public payable {
+        require(token0 != token1, "Swap token addresses are the same");
+
+        if (token0 == address(0) || token1 == address(0)) {
+            require(msg.value != 0, "Sent 0 ETH for ETH swap");
+        }
+
+        uint256 amountAbsolute = uint256(
+            amountSpecified < 0 ? -amountSpecified : amountSpecified
+        );
+
+        // transferFrom user's token into this contract
+        if (zeroForOne && token0 != address(0) && msg.sender != address(this)) {
+            _transferTokenIn(token0, msg.sender, amountAbsolute);
+            IERC20(token0).approve(address(swapRouter), amountAbsolute);
+        } else if (
+            !zeroForOne && token1 != address(0) && msg.sender != address(this)
+        ) {
+            _transferTokenIn(token1, msg.sender, amountAbsolute);
+            IERC20(token1).approve(address(swapRouter), amountAbsolute);
+        }
+
+        _swap(
+            token0,
+            token1,
+            fee,
+            tickSpacing,
+            hookAddr,
+            amountSpecified,
+            zeroForOne,
+            hookData,
+            msg.value
+        );
+
+        // transfer token to user's address
+        if (zeroForOne && token1 != address(0) && msg.sender != address(this)) {
+            uint256 outAmount = IERC20(token1).balanceOf(address(this));
+            _transferTokenOut(token1, msg.sender, outAmount);
+        } else if (
+            !zeroForOne && token0 != address(0) && msg.sender != address(this)
+        ) {
+            uint256 outAmount = IERC20(token0).balanceOf(address(this));
+            _transferTokenOut(token0, msg.sender, outAmount);
+        }
+    }
 }
