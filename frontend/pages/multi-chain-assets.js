@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 const fetchAssetsFromBlockscout = async (chain, account) => {
   const baseUrl =
@@ -8,7 +9,7 @@ const fetchAssetsFromBlockscout = async (chain, account) => {
 
   const [tokenResponse, nativeResponse] = await Promise.all([
     fetch(`${baseUrl}?module=account&action=tokenlist&address=${account}`),
-    fetch(`${baseUrl}?module=account&action=balance&address=${account}`),
+    fetch(`${baseUrl}?module=account&action=balance&address=${account}`)
   ]);
 
   if (!tokenResponse.ok || !nativeResponse.ok) {
@@ -23,6 +24,26 @@ const fetchAssetsFromBlockscout = async (chain, account) => {
 
 const calculateTokenAmount = (balance, decimals) => {
   return parseFloat(balance) / Math.pow(10, decimals);
+};
+
+const getPrices = async (cryptocurrencies) => {
+  // 逐一查詢每個加密貨幣的價格
+  const pricePromises = cryptocurrencies.map(async (crypto) => {
+    try {
+      // 發送請求到本地 API 路由
+      const response = await axios.get(`/api/cryptocurrency?symbol=${crypto.symbol}`);
+
+      // 更新該 crypto 的價格
+      crypto.price = response.data.data[crypto.symbol].quote.USD.price;
+    } catch (error) {
+      console.error(`Error fetching price for ${crypto.symbol}:`, error);
+      crypto.price = 0; // 若查詢失敗則設為 0 或其他預設值
+    }
+  });
+
+  // 等待所有請求完成
+  await Promise.all(pricePromises);
+  return cryptocurrencies;
 };
 
 export default function MultiChainAssets() {
@@ -43,10 +64,35 @@ export default function MultiChainAssets() {
       try {
         const [sepoliaData, arbitrumData] = await Promise.all([
           fetchAssetsFromBlockscout('sepolia', account),
-          fetchAssetsFromBlockscout('arbitrum', account),
+          fetchAssetsFromBlockscout('arbitrum', account)
         ]);
 
-        setBlockscoutData({ sepolia: sepoliaData, arbitrum: arbitrumData });
+        const blockscoutData = { sepolia: sepoliaData, arbitrum: arbitrumData };
+
+        // 收集所有代幣 symbol，用於查詢價格
+        let tokensToFetch = [];
+        ['sepolia', 'arbitrum'].forEach((chain) => {
+          blockscoutData[chain].tokens.forEach((token) => {
+            if (!['NameWrapper', 'MyCollection'].includes(token.name)) {
+              tokensToFetch.push({ symbol: token.symbol });
+            }
+          });
+        });
+
+        // 獲取實時價格
+        const tokensWithPrices = await getPrices(tokensToFetch);
+        // 更新 blockscoutData 中代幣的價格
+        const updatedData = { sepolia: sepoliaData, arbitrum: arbitrumData };
+        ['sepolia', 'arbitrum'].forEach((chain) => {
+          updatedData[chain].tokens.forEach((token) => {
+            const tokenWithPrice = tokensWithPrices.find((t) => t.symbol === token.symbol);
+            if (tokenWithPrice) {
+              token.price = tokenWithPrice.price;
+            }
+          });
+        });
+
+        setBlockscoutData(updatedData); // 更新狀態中的 blockscoutData
       } catch (err) {
         setError(err.message);
       } finally {
@@ -65,7 +111,7 @@ export default function MultiChainAssets() {
         const key = token.symbol;
 
         if (!aggregated[key]) {
-          aggregated[key] = { total: 0, details: [], price: (Math.random() * 100).toFixed(2) };
+          aggregated[key] = { total: 0, details: [], price: token.price || 0 };
         }
 
         const amount = calculateTokenAmount(token.balance, token.decimals);
@@ -132,7 +178,7 @@ export default function MultiChainAssets() {
             <tr key={symbol}>
               <td>{index + 1}</td>
               <td>{symbol}</td>
-              <td>${price}</td>
+              <td>${price.toFixed(2)}</td>
               <td>{total.toFixed(2)}</td>
               <td>
                 <details>
@@ -164,7 +210,11 @@ export default function MultiChainAssets() {
             <div className="input-group">
               <label>
                 Condition:
-                <select name="condition" value={notification.condition} onChange={handleInputChange}>
+                <select
+                  name="condition"
+                  value={notification.condition}
+                  onChange={handleInputChange}
+                >
                   <option value="greater">Greater than</option>
                   <option value="less">Less than</option>
                 </select>
