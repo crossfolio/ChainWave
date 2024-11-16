@@ -2,26 +2,24 @@
 
 import { VerificationLevel, IDKitWidget, useIDKit } from '@worldcoin/idkit';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie'; // 引入 js-cookie 庫來操作 cookie
+import Cookies from 'js-cookie';
 
 export default function WorldCoin() {
   const app_id = process.env.NEXT_PUBLIC_WLD_APP_ID;
   const action = process.env.NEXT_PUBLIC_WLD_ACTION;
   const router = useRouter();
   const { setOpen } = useIDKit();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  // 驗證成功後的處理
   const onSuccess = (result) => {
     console.log(
       'Verification successful with World ID. Nullifier hash:',
       result.nullifier_hash,
     );
 
-    // 驗證成功後，將成功資訊保存到 cookie 中
-    Cookies.set('isAuthenticated', 'true', { expires: 1 }); // cookie 有效期為 1 天
-    Cookies.set('worldcoinId', result.nullifier_hash, { expires: 1 }); // cookie 有效期為 1 天
+    Cookies.set('isAuthenticated', 'true', { expires: 1 });
+    Cookies.set('worldcoinId', result.nullifier_hash, { expires: 1 });
 
-    // 重定向到原始頁面或首頁
     const redirectTo = router.query.redirectTo || '/';
     router.push(redirectTo);
   };
@@ -33,7 +31,7 @@ export default function WorldCoin() {
     );
 
     try {
-      const response = await fetch('http://localhost:3001/api/verify', {
+      const response = await fetch(`${apiBaseUrl}/api/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +46,7 @@ export default function WorldCoin() {
       console.log(data);
 
       if (data.success === true) {
-        onSuccess(result); // 認證成功後調用 onSuccess
+        onSuccess(result);
       } else {
         throw new Error(`Verification failed: ${data.detail}`);
       }

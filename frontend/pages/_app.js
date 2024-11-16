@@ -1,17 +1,17 @@
-// _app.js
 import Head from 'next/head';
 import '../styles/globals.css';
 import { useState, useEffect, createContext, useContext } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
-import CreateAccountDialog from '../components/CreateAccountDialog'; // 匯入建立帳號對話框
+import CreateAccountDialog from '../components/CreateAccountDialog';
 import { useRouter } from 'next/router';
-import { connectMetaMask } from '../utils/metamask'; // 引入 connectMetaMask
+import { connectMetaMask } from '../utils/metamask';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 
 const AuthContext = createContext();
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -21,8 +21,9 @@ function MyApp({ Component, pageProps }) {
   const [account, setAccount] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false); // 控制建立帳號對話框
+  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false);
   const router = useRouter();
+  const isHomePage = router.pathname === '/';
 
   useEffect(() => {
     checkAuthentication();
@@ -63,7 +64,7 @@ function MyApp({ Component, pageProps }) {
   };
 
   const handleAccountCreation = async (username, worldcoinId, address) => {
-    const response = await fetch('http://localhost:3001/api/users', {
+    const response = await fetch(`${apiBaseUrl}/api/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -131,9 +132,8 @@ function MyApp({ Component, pageProps }) {
               )}
 
               <div
-                className={`flex flex-col ${
-                  !isLoginPage && (isSidebarCollapsed ? 'ml-20' : 'ml-64')
-                } flex-1 transition-all duration-300`}
+                className={`flex flex-col ${!isLoginPage && (isSidebarCollapsed ? 'ml-20' : 'ml-64')
+                  } flex-1 transition-all duration-300`}
               >
                 {!isLoginPage && (
                   <div className="flex justify-between items-center z-10 relative">
@@ -148,7 +148,7 @@ function MyApp({ Component, pageProps }) {
                       }
                       onLogout={onLogout}
                     />
-                    <ThemeToggle />
+                    {!isHomePage && <ThemeToggle />}
                   </div>
                 )}
 

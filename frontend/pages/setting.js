@@ -16,6 +16,7 @@ export default function SettingPage() {
   const [schemaId, setSchemaId] = useState('0x14e');
   let [username, setUsername] = useState('');
   const { isDarkMode } = useTheme();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -131,7 +132,7 @@ export default function SettingPage() {
   const getUserInfo = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${wallet_address}`,
+        `${apiBaseUrl}/api/users/${wallet_address}`,
         {
           method: 'GET',
           headers: {
@@ -152,7 +153,7 @@ export default function SettingPage() {
   const updateUserInfo = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${wallet_address}`,
+        `${apiBaseUrl}/api/users/${wallet_address}`,
         {
           method: 'PUT',
           headers: {

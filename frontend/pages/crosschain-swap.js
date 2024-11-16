@@ -10,7 +10,7 @@ import {
   arbitrumContractAddress
 } from '../constants/crossChainSwapContract';
 import { useTheme } from '../contexts/ThemeContext';
-import Cookies from 'js-cookie'; // 引入 js-cookie 庫來操作 cookie
+import Cookies from 'js-cookie';
 
 export default function CrossChainSwapPage() {
   const [fromChain, setFromChain] = useState('ethereum');
@@ -23,6 +23,7 @@ export default function CrossChainSwapPage() {
   const [fadeOut, setFadeOut] = useState(false);
   const { isDarkMode } = useTheme();
   const [totalAmounts, setTotalAmounts] = useState({ UNI: 0, USDC: 0 });
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     if (fromToken === 'UNI') {
@@ -31,7 +32,6 @@ export default function CrossChainSwapPage() {
       setToToken('UNI');
     }
 
-    // 讀取 localStorage 中的 UNI 和 USDC 的 totalAmount
     const uniAmount = localStorage.getItem('totalAmount_UNI');
     const usdcAmount = localStorage.getItem('totalAmount_USDC');
     setTotalAmounts({
@@ -60,35 +60,31 @@ export default function CrossChainSwapPage() {
       }
 
       setSwapStatus('Initiating cross-chain swap, please wait...');
-      setShowError(false); // Hide error on each Swap attempt
-      setFadeOut(false); // Reset fadeOut status
+      setShowError(false);
+      setFadeOut(false);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send('eth_requestAccounts', []);
       const signer = await provider.getSigner();
 
-      // 設置 UNI 的 ERC20 合約
       const UNIContract = new ethers.Contract(
         UNIAddress,
         UNIContractABI,
         signer,
       );
 
-      // 設置 USDC 的 ERC20 合約
       const USDCContract = new ethers.Contract(
         USDCAddress,
         USDCContractABI,
         signer,
       );
 
-      // Approve 的代幣數量（設置為足夠大的值，或者只允許 `amount`）
       const tokenAmount = ethers.parseUnits(
         amount.toString(),
         fromToken === 'UNI' ? 18 : 6,
       );
       setSwapStatus('Approving token...');
 
-      // 授權 crossChainSwapContract 使用您的代幣
       const approveTx =
         fromToken === 'UNI'
           ? await UNIContract.approve(contractAddress, tokenAmount)
@@ -102,29 +98,28 @@ export default function CrossChainSwapPage() {
         contractABI,
         signer,
       );
-      const token0 = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'; // USDC 地址
-      const token1 = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984'; // UNI 地址
-      const fee = 3000; // uint24 類型的費率
-      const tickSpacing = 60; // int24 類型的間距
-      const hookAddr = '0x0000000000000000000000000000000000000000'; // hook 地址
+      const token0 = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+      const token1 = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
+      const fee = 3000;
+      const tickSpacing = 60;
+      const hookAddr = '0x0000000000000000000000000000000000000000';
       const amountSpecified = -tokenAmount;
       const zeroForOne = fromToken === 'UNI' ? false : true;
-      const hookData = '0x'; // bytes 類型的額外數據
+      const hookData = '0x';
 
       const tx = await sepoliaContract.singleChainSwap(
-        token0, // token0 地址 (USDC)
-        token1, // token1 地址 (UNI)
-        fee, // 手續費率 (uint24)
-        tickSpacing, // tickSpacing (int24)
-        hookAddr, // hook 地址
-        amountSpecified, // 設定要交換的代幣數量 (int256)
-        zeroForOne, // zeroForOne (從 token0 換成 token1)
-        hookData, // hookData 額外數據 (bytes)
+        token0,
+        token1,
+        fee,
+        tickSpacing,
+        hookAddr,
+        amountSpecified,
+        zeroForOne,
+        hookData,
       );
 
       setSwapStatus('Transaction initiated, awaiting confirmation...');
       await tx.wait();
-      // 更新 totalAmounts，減去轉出的數量
       setTotalAmounts((prevAmounts) => ({
         ...prevAmounts,
         [fromToken]: prevAmounts[fromToken] - amount,
@@ -134,14 +129,13 @@ export default function CrossChainSwapPage() {
     } catch (error) {
       console.error('Swap failed', error);
       setSwapStatus('Swap failed, please try again later');
-      setShowError(true); // Show error
+      setShowError(true);
 
-      // Fade out after 5 seconds
       setTimeout(() => {
-        setFadeOut(true); // Start fade-out
+        setFadeOut(true);
         setTimeout(() => {
-          setShowError(false); // Hide error after fade-out
-        }, 1000); // Wait for fade-out effect to complete before hiding
+          setShowError(false);
+        }, 1000);
       }, 2000);
     }
   };
@@ -158,26 +152,23 @@ export default function CrossChainSwapPage() {
       }
 
       setSwapStatus('Initiating cross-chain swap, please wait...');
-      setShowError(false); // Hide error on each Swap attempt
-      setFadeOut(false); // Reset fadeOut status
+      setShowError(false);
+      setFadeOut(false);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send('eth_requestAccounts', []);
       const signer = await provider.getSigner();
 
-      // 設置 UNI 的 ERC20 合約
       const UNIContract = new ethers.Contract(
         UNIAddress,
         UNIContractABI,
         signer,
       );
 
-      // Approve 的代幣數量（設置為足夠大的值，或者只允許 `amount`）
       const tokenAmount = ethers.parseUnits(amount.toString(), 18);
 
       setSwapStatus('Approving token...');
 
-      // 授權 crossChainSwapContract 使用您的代幣
       const approveTx =
         fromToken === 'UNI'
           ? await UNIContract.approve(contractAddress, tokenAmount)
@@ -186,7 +177,6 @@ export default function CrossChainSwapPage() {
 
       setSwapStatus('Token approved. Initiating swap...');
 
-      // step1
       const sepoliaContract = new ethers.Contract(
         contractAddress,
         contractABI,
@@ -207,7 +197,6 @@ export default function CrossChainSwapPage() {
         arbitrumContractAddress,
       );
 
-      // 取得 txHash
       const txHash1 = tx1.hash;
       console.log('Transaction Hash for Step 1:', txHash1);
 
@@ -215,17 +204,14 @@ export default function CrossChainSwapPage() {
         'Cross-chain swap in progress. Awaiting confirmation... (1)',
       );
 
-      // 等待 Step1 交易完成
       const receipt1 = await tx1.wait();
-      if (receipt1.status === 1) { // 確認交易成功
+      if (receipt1.status === 1) {
         setSwapStatus(
           'Cross-chain swap in progress. Awaiting confirmation... (2)',
         );
 
-        // Step 2
         let doDestinationUSDCRes = await doDestinationUSDC(txHash1);
         if (doDestinationUSDCRes) {
-          // 更新 totalAmounts，減去轉出的數量
           setTotalAmounts((prevAmounts) => ({
             ...prevAmounts,
             [fromToken]: prevAmounts[fromToken] - amount,
@@ -240,14 +226,13 @@ export default function CrossChainSwapPage() {
     } catch (error) {
       console.error('Swap failed', error);
       setSwapStatus('Swap failed, please try again later');
-      setShowError(true); // Show error
+      setShowError(true);
 
-      // Fade out after 5 seconds
       setTimeout(() => {
-        setFadeOut(true); // Start fade-out
+        setFadeOut(true);
         setTimeout(() => {
-          setShowError(false); // Hide error after fade-out
-        }, 1000); // Wait for fade-out effect to complete before hiding
+          setShowError(false);
+        }, 1000);
       }, 2000);
     }
   };
@@ -255,7 +240,7 @@ export default function CrossChainSwapPage() {
   const doDestinationUSDC = async (txHash) => {
     const savedAddress = Cookies.get('newAccount');
     try {
-      const response = await fetch(`http://localhost:3001/api/autoswap/destinationUSDC`, {
+      const response = await fetch(`${apiBaseUrl}/api/autoswap/destinationUSDC`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

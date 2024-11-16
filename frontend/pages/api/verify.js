@@ -13,7 +13,6 @@ export default async function handler(req, res) {
     }
 
     try {
-      // 使用 verifyCloudProof 進行後端驗證
       const verifyRes = await verifyCloudProof(proof, app_id, action, signal);
 
       if (verifyRes.success) {
