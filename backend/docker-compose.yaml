@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  my-express-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-express-app-container
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
