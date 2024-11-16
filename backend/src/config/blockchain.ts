@@ -29,7 +29,7 @@ export const contract_address = {
     },
 
     UNI: {
-      Swap_Test: '0xe437355299114d35ffcbc0c39e163b24a8e9cbf1',
+      Swap_Test: '0xe49d2815C231826caB58017e214Bed19fE1c2dD4',
     },
 
     Token: {
@@ -37,7 +37,7 @@ export const contract_address = {
       UNI: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
     },
 
-    AutoSwap: '0x478EA23599255aC080485519e41BEB56561fA66b',
+    ChainWave: '0x36Ada81c3436F8C75A243425B9Ebd3320858c313',
   },
 
   ARB: {

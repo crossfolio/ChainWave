@@ -20,13 +20,15 @@ contract SrcChainScript is Script {
         0x7865fAfC2db2093669d92c0F33AeEF291086BEFD;
     address public ETH_UNI_ROUTER_V4_CONTRACT_ADDRESS =
         0xe49d2815C231826caB58017e214Bed19fE1c2dD4;
+    address public ETH_CHAIN_WAVE_CONTRACT_ADDRESS =
+        0x36Ada81c3436F8C75A243425B9Ebd3320858c313;
 
     address zeroAddress = address(0);
 
     function setUp() public {
-        vm.createSelectFork(
-            "https://eth-sepolia.g.alchemy.com/v2/vH0O61Etz-4nHscME2FA6IWVfpB2sSQ3"
-        );
+        // vm.createSelectFork(
+        //     "https://eth-sepolia.g.alchemy.com/v2/vH0O61Etz-4nHscME2FA6IWVfpB2sSQ3"
+        // );
     }
 
     function run() public {
@@ -39,21 +41,24 @@ contract SrcChainScript is Script {
         uint24 fee = 3000;
         int24 tickSpacing = 60;
         address hookAddr = zeroAddress;
-        bool zeroForOne = false;
-        int256 amountSpecified = -0.00001 ether;
+        bool zeroForOne = true;
+        int256 amountSpecified = -1000;
         bytes memory hookData = new bytes(0); // 0x
 
-        // vm.startBroadcast();
+        vm.startBroadcast();
 
-        ChainWave chainWave = new ChainWave(
-            ETH_UNI_ROUTER_V4_CONTRACT_ADDRESS,
-            ETH_TOKEN_MESSENGER_CONTRACT_ADDRESS,
-            ETH_TOKEN_MESSAGE_TRANSMITTER_CONTRACT_ADDRESS,
-            USDC_ETH_CONTRACT_ADDRESS
+        // ChainWave chainWave = new ChainWave(
+        //     ETH_UNI_ROUTER_V4_CONTRACT_ADDRESS,
+        //     ETH_TOKEN_MESSENGER_CONTRACT_ADDRESS,
+        //     ETH_TOKEN_MESSAGE_TRANSMITTER_CONTRACT_ADDRESS,
+        //     USDC_ETH_CONTRACT_ADDRESS
+        // );
+
+        // vm.prank(user);
+        IERC20(token0).approve(
+            address(ETH_CHAIN_WAVE_CONTRACT_ADDRESS),
+            type(uint256).max
         );
-
-        vm.prank(user);
-        IERC20(token1).approve(address(chainWave), type(uint256).max);
 
         // chainWave.departureUSDC(
         //     user,
@@ -62,16 +67,16 @@ contract SrcChainScript is Script {
         //     destinationRecipient
         // );
 
-        // chainWave.singleChainSwap(
-        //     token0,
-        //     token1,
-        //     fee,
-        //     tickSpacing,
-        //     hookAddr,
-        //     amountSpecified,
-        //     zeroForOne,
-        //     hookData
-        // );
+        ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).singleChainSwap(
+            token0,
+            token1,
+            fee,
+            tickSpacing,
+            hookAddr,
+            amountSpecified,
+            zeroForOne,
+            hookData
+        );
 
         // chainWave.multiChainSwap(
         //     token0,
@@ -98,20 +103,20 @@ contract SrcChainScript is Script {
         //     user
         // );
 
-        chainWave.autoMultiChainSwap(
-            token0,
-            token1,
-            fee,
-            tickSpacing,
-            hookAddr,
-            amountSpecified,
-            zeroForOne,
-            hookData,
-            destinationDomain,
-            destinationRecipient,
-            user
-        );
+        // chainWave.autoMultiChainSwap(
+        //     token0,
+        //     token1,
+        //     fee,
+        //     tickSpacing,
+        //     hookAddr,
+        //     amountSpecified,
+        //     zeroForOne,
+        //     hookData,
+        //     destinationDomain,
+        //     destinationRecipient,
+        //     user
+        // );
 
-        // vm.stopBroadcast();
+        vm.stopBroadcast();
     }
 }
