@@ -8,5 +8,15 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI}
+      - PORT=${PORT}
+      - COINMARKETCAP_KEY=${COINMARKETCAP_KEY}
+      - NEXT_PUBLIC_WLD_APP_ID=${NEXT_PUBLIC_WLD_APP_ID}
+      - NEXT_PUBLIC_WLD_ACTION=${NEXT_PUBLIC_WLD_ACTION}
+      - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
+      - PUSH_USER_1_PRIVATE_KEY=${PUSH_USER_1_PRIVATE_KEY}
+      - DEPLOYER_PRIVATE_KEY=${DEPLOYER_PRIVATE_KEY}
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - ARB_RPC_URL=${ARB_RPC_URL}
     restart: unless-stopped
