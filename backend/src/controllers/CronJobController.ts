@@ -1,11 +1,28 @@
 import cron from 'node-cron'
 import 'dotenv/config'
+import { PushAPI, CONSTANTS } from '@pushprotocol/restapi'
+import { ethers } from 'ethers'
 import { alarmService } from '../services/AlarmService'
 import { cronJobService } from '../services/CronJobService'
 import { IUser } from '../models/User'
 import { Schema } from 'mongoose'
 
 async function main() {
+  // Initialize Push Protocol
+  let dvp: ethers.Wallet
+  let userDvp: PushAPI
+  try {
+    dvp = new ethers.Wallet(
+      process.env.PUSH_USER_1_PRIVATE_KEY || 'default_private_key',
+    )
+    userDvp = await PushAPI.initialize(dvp, {
+      env: CONSTANTS.ENV.PROD,
+    })
+    console.log('Push Protocol initialized')
+  } catch (error) {
+    console.error('cannot initialized Push Protocol:', error)
+  }
+
   // Set Cron Job, every minute
   cron.schedule('* * * * *', async () => {
     console.log('Cron Job execution started')
@@ -34,7 +51,12 @@ async function main() {
             }
           }
           for (const user of users) {
-            // TODO: send notification
+            await cronJobService.sendNotification(
+              symbol,
+              currentPrice,
+              user.walletAddress,
+              userDvp,
+            )
           }
           await cronJobService.setAlarmInactive(alarm._id as Schema.Types.ObjectId)
         }
