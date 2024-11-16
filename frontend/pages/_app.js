@@ -1,11 +1,12 @@
+// _app.js
 import "../styles/globals.css";
 import { useState, useEffect, createContext, useContext } from "react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import ThemeToggle from "../components/ThemeToggle";
+import CreateAccountDialog from "../components/CreateAccountDialog";
 import { useRouter } from "next/router";
-import { queryAttestations } from "../utils/signProtocol";
-import Cookies from "js-cookie";
+import { connectMetaMask } from "../utils/metamask";
 
 const AuthContext = createContext();
 
@@ -17,6 +18,7 @@ function MyApp({ Component, pageProps }) {
   const [account, setAccount] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false); // 控制建立帳號對話框
   const router = useRouter();
 
   useEffect(() => {
@@ -25,10 +27,11 @@ function MyApp({ Component, pageProps }) {
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", (accounts) => {
         if (accounts.length > 0) {
-          setAccount(accounts[0]);
-          setIsAuthenticated(true);
-          localStorage.setItem("account", accounts[0]);
-          localStorage.setItem("isAuthenticated", "true");
+          connectMetaMask(
+            setAccount,
+            setIsAuthenticated,
+            showCreateAccountDialogHandler
+          );
         } else {
           onLogout();
         }
@@ -37,7 +40,7 @@ function MyApp({ Component, pageProps }) {
 
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener("accountsChanged", onWalletConnected);
+        window.ethereum.removeListener("accountsChanged", connectMetaMask);
       }
     };
   }, []);
@@ -52,10 +55,26 @@ function MyApp({ Component, pageProps }) {
     }
   };
 
-  const onWalletConnected = (newAccount) => {
-    setAccount(newAccount);
+  const showCreateAccountDialogHandler = () => {
+    setShowCreateAccountDialog(true);
+  };
+
+  const handleAccountCreation = async (username) => {
+    const response = await fetch("/api/createAccount", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("Account creation response:", data);
+    setShowCreateAccountDialog(false);
     setIsAuthenticated(true);
-    localStorage.setItem("account", newAccount);
+    localStorage.setItem("account", account);
     localStorage.setItem("isAuthenticated", "true");
   };
 
@@ -72,7 +91,12 @@ function MyApp({ Component, pageProps }) {
   const authContextValue = {
     account,
     isAuthenticated,
-    onWalletConnected,
+    onWalletConnected: () =>
+      connectMetaMask(
+        setAccount,
+        setIsAuthenticated,
+        showCreateAccountDialogHandler
+      ),
     onLogout,
   };
 
@@ -92,10 +116,19 @@ function MyApp({ Component, pageProps }) {
             !isLoginPage && (isSidebarCollapsed ? "ml-20" : "ml-64")
           } flex-1 transition-all duration-300`}
         >
-          {/* 在登入頁面隱藏 Header 和 ThemeToggle */}
           {!isLoginPage && (
-            <div className="flex justify-between items-center p-4">
-              <Header account={account} onWalletConnected={onWalletConnected} onLogout={onLogout} />
+            <div className="flex justify-between items-center">
+              <Header
+                account={account}
+                onWalletConnected={() =>
+                  connectMetaMask(
+                    setAccount,
+                    setIsAuthenticated,
+                    showCreateAccountDialogHandler
+                  )
+                }
+                onLogout={onLogout}
+              />
               <ThemeToggle />
             </div>
           )}
@@ -120,6 +153,13 @@ function MyApp({ Component, pageProps }) {
           </main>
         </div>
       </div>
+
+      <CreateAccountDialog
+        isOpen={showCreateAccountDialog}
+        onClose={() => setShowCreateAccountDialog(false)}
+        onCreate={handleAccountCreation}
+        account={account}
+      />
     </AuthContext.Provider>
   );
 }

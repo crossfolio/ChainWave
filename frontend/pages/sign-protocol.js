@@ -40,7 +40,7 @@ export default function SignProtocol({ account }) {
   };
 
   const client = new SignProtocolClient(SpMode.OnChain, {
-    chain: EvmChains.sepolia,
+    chain: EvmChains.arbitrumSepolia,
   });
 
   const createSchema = async () => {
