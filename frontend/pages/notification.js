@@ -81,6 +81,8 @@ export default function NotificationList() {
             ...alarm,
             condition: editAlarm.condition,
             price: editAlarm.price,
+            status: editAlarm.status,
+            isSwap: editAlarm.isSwap,
           };
         }
         return alarm;

@@ -29,9 +29,9 @@ export default function MultiChainAssets() {
     condition: 'greater',
     price: '',
     autoSwap: false,
-    autoSwapChain: '',
+    autoSwapChain: 'ETH',
     autoSwapToken: '',
-    autoSwapSourceChains: [],
+    autoSwapSourceChains: ['ETH'],
   });
   const [viewMode, setViewMode] = useState('aggregated');
 
@@ -64,17 +64,26 @@ export default function MultiChainAssets() {
   const handleSubmit = async () => {
     const savedAddress = Cookies.get('newAccount');
     const alarms = await getAlarms(savedAddress);
-    const simplifiedAlarms = alarms.map(({ symbol, condition, price }) => ({
-      symbol,
-      condition,
-      price,
-    }));
+    const simplifiedAlarms = []
+    if (alarms.status === 200) {
+      alarms.map(({ symbol, condition, price, status, isSwap }) => ({
+        symbol,
+        condition,
+        price,
+        status,
+        isSwap
+      }));
+    }
     simplifiedAlarms.push({
       symbol: selectedToken.symbol,
       condition: notification.condition === 'greater' ? 'greater than' : 'less than',
       price: parseFloat(notification.price),
       status: "active",
       isSwap: notification.autoSwap,
+      srcChain: notification.autoSwapSourceChains[0],
+      dstChain: notification.autoSwapChain,
+      srcToken: selectedToken.symbol,
+      destToken: notification.autoSwapToken
     });
 
     try {
@@ -216,9 +225,9 @@ export default function MultiChainAssets() {
       condition: 'greater',
       price: '',
       autoSwap: false,
-      autoSwapChain: '',
+      autoSwapChain: 'ETH',
       autoSwapToken: '',
-      autoSwapSourceChains: [],
+      autoSwapSourceChains: ['ETH'],
     });
   };
 
