@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ethers } from 'ethers';
 import LogoutDialog from './LogoutDialog';
-import { checkMetaMaskAvailability, formatAddress } from '../utils/util';
+import { checkMetaMaskAvailability, formatAddress, getUserInfo } from '../utils/util';
 import { useNotification } from '../contexts/NotificationContext';
 import Cookies from 'js-cookie';
 
@@ -27,6 +27,8 @@ export default function Header({ account, onWalletConnected, onLogout }) {
             if (userInfo && userInfo.name) {
               const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(userInfo.name)}`;
               setProfileImage(imageUrl);
+            }else if (userInfo === null) {
+              setProfileImage(null);
             }
           }
         } catch (error) {
@@ -61,25 +63,6 @@ export default function Header({ account, onWalletConnected, onLogout }) {
     };
   }, [showNotifications]);
 
-  const getUserInfo = async (wallet_address) => {
-    try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/users/${wallet_address}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      const data = await response.json();
-      console.log(data);
-      return data;
-    } catch (error) {
-      console.error('Error during verification:', error);
-    }
-  };
 
   const toggleNotifications = () => setShowNotifications(!showNotifications);
 
