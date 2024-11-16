@@ -29,7 +29,7 @@ export const contract_address = {
     },
 
     UNI: {
-      Swap_Test: '0xe437355299114d35ffcbc0c39e163b24a8e9cbf1',
+      Swap_Test: '0xe49d2815C231826caB58017e214Bed19fE1c2dD4',
     },
 
     Token: {
@@ -37,7 +37,7 @@ export const contract_address = {
       UNI: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
     },
 
-    AutoSwap: '0x478EA23599255aC080485519e41BEB56561fA66b',
+    ChainWave: '0x36Ada81c3436F8C75A243425B9Ebd3320858c313',
   },
 
   ARB: {
@@ -56,6 +56,45 @@ export const contract_address = {
       UNI: '0x0',
     },
 
-    AutoSwap: '0x8d44abda004315646dcA14F3B35B270cc12167A0',
+    ChainWave: '0xdc8cFDE4E25df84562D32E5Bd5F0e78E432b9c17',
+  },
+
+  UNI: {
+    CCTP: {
+      Token_Messenger: '0x0',
+      Message_Transmitter: '0x0',
+      Message: '0x0',
+    },
+
+    UNI: {
+      Swap_Test: '0xe437355299114d35Ffcbc0c39e163B24A8E9cBf1',
+    },
+
+    Token: {
+      USDC: '0x31d0220469e10c4E71834a79b1f276d740d3768F',
+      UNI: '0x0',
+    },
+
+    ChainWave: '0xF9c39b98618F8c30c3edB127f41b75B395De6BE6',
+  },
+
+  BASE: {
+    CCTP: {
+      Token_Messenger: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5',
+      Message_Transmitter: '0x7865fAfC2db2093669d92c0F33AeEF291086BEFD',
+      Message: '0x0',
+    },
+
+    UNI: {
+      Swap_Test: '0x96E3495b712c6589f1D2c50635FDE68CF17AC83c',
+    },
+
+    Token: {
+      USDC: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+      UNI: '0x0',
+      ASCEND: '0xb23E177B86a6Da4D078204ae3Ca326c4cb1dfe9E'
+    },
+
+    ChainWave: '0xF9c39b98618F8c30c3edB127f41b75B395De6BE6',
   },
 }
