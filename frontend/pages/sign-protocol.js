@@ -21,7 +21,7 @@ export default function SignProtocol({ account }) {
   const [query, setQuery] = useState(null);
   const [queryResults, setQueryResults] = useState([]);
   const [querySchemaId, setQuerySchemaId] = useState(
-    "onchain_evm_11155111_0xd"
+    "onchain_evm_421614_0x14e"
   );
   const [attestationId, setAttestationId] = useState("");
 
@@ -40,7 +40,7 @@ export default function SignProtocol({ account }) {
   };
 
   const client = new SignProtocolClient(SpMode.OnChain, {
-    chain: EvmChains.sepolia,
+    chain: EvmChains.arbitrumSepolia,
   });
 
   const createSchema = async () => {
@@ -149,6 +149,7 @@ export default function SignProtocol({ account }) {
         page: 1,
         mode: "onchain",
       });
+      // const response = await indexService.querySchema("onchain_evm_11155111_0x2c3");
       console.log("Query response:", response);
 
       const att = response.rows[0].data;

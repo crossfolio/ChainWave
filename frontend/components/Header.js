@@ -1,10 +1,11 @@
+// Header.js
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import LogoutDialog from './LogoutDialog';
 import { resolveENS, checkMetaMaskAvailability, formatAddress } from '../utils/util';
 
 export default function Header({ account, onWalletConnected, onLogout }) {
-  const [showDialog, setShowDialog] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
@@ -40,13 +41,13 @@ export default function Header({ account, onWalletConnected, onLogout }) {
 
     if (!checkMetaMaskAvailability()) return;
 
-    closeDialog();
+    closeLogoutDialog();
 
     window.location.reload();
   };
 
-  const openDialog = () => setShowDialog(true);
-  const closeDialog = () => setShowDialog(false);
+  const openLogoutDialog = () => setShowLogoutDialog(true);
+  const closeLogoutDialog = () => setShowLogoutDialog(false);
 
   return (
     <div className="fixed top-4 right-4">
@@ -57,7 +58,7 @@ export default function Header({ account, onWalletConnected, onLogout }) {
               src={profileImage}
               alt="Profile"
               className="w-10 h-10 rounded-full cursor-pointer"
-              onClick={openDialog}
+              onClick={openLogoutDialog}
             />
           )}
         </div>
@@ -70,7 +71,7 @@ export default function Header({ account, onWalletConnected, onLogout }) {
         </button>
       )}
 
-      {showDialog && <LogoutDialog confirmLogout={confirmLogout} cancelLogout={closeDialog} />}
+      {showLogoutDialog && <LogoutDialog confirmLogout={confirmLogout} cancelLogout={closeLogoutDialog} />}
     </div>
   );
 }
