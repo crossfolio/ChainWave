@@ -77,4 +77,24 @@ export const contract_address = {
 
     ChainWave: '0xF9c39b98618F8c30c3edB127f41b75B395De6BE6',
   },
+
+  BASE: {
+    CCTP: {
+      Token_Messenger: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5',
+      Message_Transmitter: '0x7865fAfC2db2093669d92c0F33AeEF291086BEFD',
+      Message: '0x0',
+    },
+
+    UNI: {
+      Swap_Test: '0x96E3495b712c6589f1D2c50635FDE68CF17AC83c',
+    },
+
+    Token: {
+      USDC: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+      UNI: '0x0',
+      ASCEND: '0xb23E177B86a6Da4D078204ae3Ca326c4cb1dfe9E'
+    },
+
+    ChainWave: '0xF9c39b98618F8c30c3edB127f41b75B395De6BE6',
+  },
 }

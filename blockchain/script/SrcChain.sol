@@ -11,8 +11,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IPositionManager} from "lib/v4-periphery/src/interfaces/IPositionManager.sol";
 
 contract SrcChainScript is Script {
-    address public USDC_UNI_CONTRACT_ADDRESS =
-        0x31d0220469e10c4E71834a79b1f276d740d3768F;
+    address public USDC_ETH_CONTRACT_ADDRESS =
+        0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
     address public UNI_ETH_CONTRACT_ADDRESS =
         0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
 
@@ -21,13 +21,13 @@ contract SrcChainScript is Script {
     address public ETH_TOKEN_MESSAGE_TRANSMITTER_CONTRACT_ADDRESS =
         0x7865fAfC2db2093669d92c0F33AeEF291086BEFD;
 
-    address public UNI_UNI_ROUTER_V4_CONTRACT_ADDRESS =
-        0xe437355299114d35Ffcbc0c39e163B24A8E9cBf1;
+    address public ETH_UNI_ROUTER_V4_CONTRACT_ADDRESS =
+        0xe49d2815C231826caB58017e214Bed19fE1c2dD4;
 
     address public ETH_CHAIN_WAVE_CONTRACT_ADDRESS =
         0x36Ada81c3436F8C75A243425B9Ebd3320858c313;
-    address public ARB_CHAIN_WAVE_CONTRACT_ADDRESS =
-        0xdc8cFDE4E25df84562D32E5Bd5F0e78E432b9c17;
+    address public BASE_CHAIN_WAVE_CONTRACT_ADDRESS =
+        0xF9c39b98618F8c30c3edB127f41b75B395De6BE6;
 
     address zeroAddress = address(0);
 
@@ -38,23 +38,23 @@ contract SrcChainScript is Script {
     }
 
     function run() public {
-        // address user = address(0xAbCDefA067FF1201719867f10e497dEEAc78CC67);
-        // uint32 destinationDomain = 3;
-        // address destinationRecipient = ARB_CHAIN_WAVE_CONTRACT_ADDRESS;
+        address user = address(0xAbCDefA067FF1201719867f10e497dEEAc78CC67);
+        uint32 destinationDomain = 6;
+        address destinationRecipient = BASE_CHAIN_WAVE_CONTRACT_ADDRESS;
 
-        // address token0 = USDC_ETH_CONTRACT_ADDRESS;
-        // address token1 = UNI_ETH_CONTRACT_ADDRESS;
-        // uint24 fee = 3000;
-        // int24 tickSpacing = 60;
-        // address hookAddr = zeroAddress;
-        // bool zeroForOne = false;
-        // int256 amountSpecified = -0.0001 ether;
-        // bytes memory hookData = new bytes(0); // 0x
+        address token0 = USDC_ETH_CONTRACT_ADDRESS;
+        address token1 = UNI_ETH_CONTRACT_ADDRESS;
+        uint24 fee = 3000;
+        int24 tickSpacing = 60;
+        address hookAddr = zeroAddress;
+        bool zeroForOne = false;
+        int256 amountSpecified = -0.00001 ether;
+        bytes memory hookData = new bytes(0); // 0x
 
         vm.startBroadcast();
 
-        IPositionManager(0xB433cB9BcDF4CfCC5cAB7D34f90d1a7deEfD27b9)
-            .getPoolAndPositionInfo(6);
+        // IPositionManager(0xB433cB9BcDF4CfCC5cAB7D34f90d1a7deEfD27b9)
+        //     .getPoolAndPositionInfo(6);
 
         // ChainWave chainWave = new ChainWave(
         //     UNI_UNI_ROUTER_V4_CONTRACT_ADDRESS,
@@ -64,7 +64,7 @@ contract SrcChainScript is Script {
         // );
 
         // vm.prank(user);
-        // IERC20(token1).approve(
+        // IERC20(token0).approve(
         //     address(ETH_CHAIN_WAVE_CONTRACT_ADDRESS),
         //     type(uint256).max
         // );
@@ -76,16 +76,19 @@ contract SrcChainScript is Script {
         //     destinationRecipient
         // );
 
-        // ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).singleChainSwap(
-        //     token0,
-        //     token1,
-        //     fee,
-        //     tickSpacing,
-        //     hookAddr,
-        //     amountSpecified,
-        //     zeroForOne,
-        //     hookData
-        // );
+        ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).autoMultiChainSwap(
+            token0,
+            token1,
+            fee,
+            tickSpacing,
+            hookAddr,
+            amountSpecified,
+            zeroForOne,
+            hookData,
+            destinationDomain,
+            destinationRecipient,
+            user
+        );
 
         // ChainWave(ETH_CHAIN_WAVE_CONTRACT_ADDRESS).multiChainSwap(
         //     token0,
