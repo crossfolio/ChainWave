@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import Header from "../components/Header";
-import { SignProtocolClient, SpMode, EvmChains } from "@ethsign/sp-sdk";
+import {
+  SignProtocolClient,
+  SpMode,
+  EvmChains,
+  IndexService,
+  decodeOnChainData,
+} from "@ethsign/sp-sdk";
 
 export default function SignProtocol({ account }) {
   const [deviceId, setDeviceId] = useState("");
@@ -10,9 +16,14 @@ export default function SignProtocol({ account }) {
   const [schemaId, setSchemaId] = useState("");
   const [schemaName, setSchemaName] = useState("");
   const [schemaData, setSchemaData] = useState(
-    '[{"name":"worldcoinId","type":"string","required":true},{"name":"ethereumAddress","type":"address","required":true},{"name":"timestamp","type":"uint256","required":true},{"name":"signature","type":"string","required":true,"description":"由 Ethereum 地址對訊息進行的數位簽名"}]'
+    '[{"name":"worldcoinSign","type":"string","required":true}]'
   );
   const [query, setQuery] = useState(null);
+  const [queryResults, setQueryResults] = useState([]);
+  const [querySchemaId, setQuerySchemaId] = useState(
+    "onchain_evm_11155111_0xd"
+  );
+  const [attestationId, setAttestationId] = useState("");
 
   const [worldcoinId, setWorldcoinId] = useState("");
   const [ethereumAddress, setEthereumAddress] = useState("");
@@ -98,10 +109,7 @@ export default function SignProtocol({ account }) {
       });
 
       const attestationData = {
-        worldcoinId: worldcoinId,
-        ethereumAddress: ethereumAddress,
-        timestamp: timestamp,
-        signature: signedMessage,
+        worldcoinSign: signedMessage,
       };
 
       const attestationRes = await client.createAttestation({
@@ -114,7 +122,63 @@ export default function SignProtocol({ account }) {
     }
   };
 
+  const revokeAttestation = async () => {
+    if (!attestationId) {
+      alert("Please enter a valid attestation ID to revoke");
+      return;
+    }
 
+    try {
+      const response = await client.revokeAttestation(attestationId, {
+        reason: "User requested revocation",
+      });
+      console.log("Attestation Revoked:", response);
+      alert("Attestation has been successfully revoked.");
+    } catch (error) {
+      console.error("Failed to revoke attestation:", error);
+      alert("Failed to revoke attestation. Check the console for details.");
+    }
+  };
+
+  const queryAttestations = async () => {
+    if (!querySchemaId) {
+      alert("Please enter a schema id to query attestations");
+      return;
+    }
+
+    try {
+      const indexService = new IndexService("testnet");
+      console.log("Querying attestations with schemaId:", querySchemaId);
+
+      const response = await indexService.queryAttestationList({
+        schemaId: querySchemaId,
+        page: 1,
+        mode: "onchain",
+      });
+      console.log("Query response:", response);
+
+      const att = response.rows[0].data;
+
+      const res = decodeOnChainData(
+        att,
+        JSON.parse(schemaData)
+      );
+
+      console.log("Decoded data:", res);
+
+      if (response) {
+        console.log("Attestations found:", res);
+        setQueryResults(res);
+      } else {
+        console.error(
+          "Error querying attestations:",
+          response ? response.message : "Unknown error"
+        );
+      }
+    } catch (error) {
+      console.error("Failed to query attestations:", error.message || error);
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -122,6 +186,7 @@ export default function SignProtocol({ account }) {
       <h2 className="text-2xl font-semibold my-6">Sign Protocol</h2>
 
       <div className="space-y-6">
+        {/* Create Schema Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-4">Create Schema</h3>
           <label className="block font-medium mb-1">Schema Name</label>
@@ -148,6 +213,7 @@ export default function SignProtocol({ account }) {
           </button>
         </div>
 
+        {/* Get Schema Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-4">Get Schema</h3>
           <label className="block font-medium mb-1">Schema Id</label>
@@ -173,6 +239,7 @@ export default function SignProtocol({ account }) {
           )}
         </div>
 
+        {/* Create Attestation Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-medium mb-4">Create Attestation</h3>
           <label className="block font-medium mb-1">Schema Id</label>
@@ -191,14 +258,7 @@ export default function SignProtocol({ account }) {
             className="w-full p-2 border border-gray-300 rounded mb-4"
             placeholder="Enter Worldcoin ID"
           />
-          <label className="block font-medium mb-1">Ethereum Address</label>
-          <input
-            type="text"
-            value={ethereumAddress}
-            onChange={(e) => setEthereumAddress(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded mb-4"
-            placeholder="Enter Ethereum Address"
-          />
+
           <button
             onClick={createAttestation}
             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
@@ -206,7 +266,51 @@ export default function SignProtocol({ account }) {
             Create Attestation
           </button>
         </div>
-        
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-medium mb-4">Query Attestations</h3>
+          <label className="block font-medium mb-1">Schema Id</label>
+          <input
+            type="text"
+            value={querySchemaId}
+            onChange={(e) => setQuerySchemaId(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+            placeholder="Enter Schema Id"
+          />
+          <button
+            onClick={queryAttestations}
+            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          >
+            Query Attestations
+          </button>
+          {queryResults.length > 0 && (
+            <div className="mt-4 p-4 bg-gray-100 rounded text-gray-700">
+              <h4 className="font-medium">Query Results:</h4>
+              <div className="mt-2">
+                <p>
+                  <strong>Worldcoin signature:</strong> {queryResults}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Revoke Attestation Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-medium mb-4">Revoke Attestation</h3>
+          <label className="block font-medium mb-1">Attestation ID</label>
+          <input
+            type="text"
+            value={attestationId}
+            onChange={(e) => setAttestationId(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+            placeholder="Enter Attestation ID"
+          />
+          <button
+            onClick={revokeAttestation}
+            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+          >
+            Revoke Attestation
+          </button>
+        </div>
       </div>
     </div>
   );
