@@ -8,7 +8,7 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - MONGO_URI=${MONGO_URI}
       - PORT=${PORT}
       - COINMARKETCAP_KEY=${COINMARKETCAP_KEY}
