@@ -1,9 +1,8 @@
-import express, { Request, Response } from 'express'
+import express, { NextFunction, Request, RequestHandler, Response } from 'express'
 import './controllers/CronJobController'
 import swaggerDocument from '../dist/swagger.json'
 import swaggerUi from 'swagger-ui-express'
 import dotenv from 'dotenv'
-import cors from 'cors'
 import { RegisterRoutes } from './routes/routes'
 import { errorHandler } from './middlewares/errorHandler'
 
@@ -11,29 +10,18 @@ dotenv.config()
 
 const app = express()
 
-const isDev = process.env.NODE_ENV === 'development'
-const corsWhitelist = isDev
-  ? [
-      `http://localhost:${process.env.PORT}`,
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-    ]
-  : process.env.CORS_ORIGIN_WHITELIST?.split(',') || []
-app.use(
-  cors({
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) => {
-      if (!origin || corsWhitelist.includes(origin)) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
-    },
-  }),
-)
+// CORS
+const cors: RequestHandler = (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin')
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+    return 
+  }
+  next()
+}
+app.use(cors)
 
 // Middleware
 app.use(express.json())
