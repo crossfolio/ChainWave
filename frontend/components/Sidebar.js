@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import {
   FaWallet,
   FaBell,
@@ -6,6 +7,7 @@ import {
   FaTimes,
   FaCog,
 } from "react-icons/fa";
+import { useState, useEffect } from "react";
 import classNames from "classnames";
 import { useRouter } from "next/router";
 import { formatAddress } from "../utils/util";
@@ -21,6 +23,24 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
   ];
 
   const handleNavigation = (path) => router.push(path);
+
+  const [ensName, setEnsName] = useState(account);
+  useEffect(() => {
+    const resolveENS = async (address) => {
+      if (window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        try {
+          const ens = await provider.lookupAddress(address);
+          setEnsName(ens || address);
+        } catch (error) {
+          console.error('Failed to resolve ENS', error);
+        }
+      }
+    };
+    if (account) {
+      resolveENS(account);
+    }
+  }, [account]);
 
   return (
     <nav
@@ -66,7 +86,10 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
           <div className="flex items-center space-x-2">
             <p>Connected as:</p>
             <p className="font-semibold truncate">
-              {account ? formatAddress(account) : "Not connected"}
+
+              {account
+                ? (ensName || formatAddress(account))
+                : 'Not connected'}
             </p>
           </div>
         )}
