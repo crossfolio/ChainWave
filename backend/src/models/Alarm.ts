@@ -43,7 +43,7 @@ const AlarmSchema: Schema = new Schema<IAlarm>(
     dstChain: { type: String },
   },
   {
-    versionKey: false, // 禁用 __v 字段
+    versionKey: false,
     timestamps: true,
   },
 )
