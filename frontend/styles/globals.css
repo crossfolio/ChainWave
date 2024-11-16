@@ -30,7 +30,7 @@ body {
     /* 垂直置中 */
     padding: 0 20px;
     /* 增加左右邊距 */
-    background-color: #1c1c1c;
+    background-color: #1C1C1C;
     image-rendering: pixelated;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     position: fixed;
@@ -39,14 +39,14 @@ body {
     width: 100%;
     height: 40px;
     z-index: 1000;
-    border-bottom: 2px solid #1c1c1c;
+    border-bottom: 2px solid #1C1C1C;
 }
 
 /* MetaMask Button Styling */
 .metamask-btn {
     padding: 8px 16px;
-    background-color: #1c1c1c;
-    color: #fcfaf2;
+    background-color: #1C1C1C;
+    color: #FCFAF2;
     border: none;
     cursor: pointer;
     font-size: 14px;
@@ -57,15 +57,15 @@ body {
 
 /* Button Hover Effect */
 .metamask-btn:hover {
-    background-color: #4f4f48;
+    background-color: #4F4F48;
 }
 
 /* Sidebar Styling */
 .sidebar {
     width: 220px;
-    background-color: #1c1c1c;
+    background-color: #1C1C1C;
     /* Bright sidebar */
-    color: #1c1c1c;
+    color: #1C1C1C;
     padding: 20px;
     height: 100vh;
     /* Ensures it fills the entire screen height */
@@ -88,17 +88,17 @@ body {
 .sidebar li {
     margin: 10px 0;
     padding: 10px;
-    background-color: #1c1c1c;
-    border: 2px solid #1c1c1c;
+    background-color: #1C1C1C;
+    border: 2px solid #1C1C1C;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    color: #fcfaf2;
+    color: #FCFAF2;
     text-align: center;
 }
 
 .sidebar li:hover {
-    background-color: #4f4f48;
+    background-color: #4F4F48;
 }
 
 /* Main Layout */
@@ -127,7 +127,7 @@ body {
     height: calc(100vh - 40px);
     /* 扣除 Header 高度 */
     overflow-y: auto;
-    color: #fcfaf2;
+    color: #FCFAF2;
 }
 
 /* Main Content */
@@ -138,6 +138,16 @@ body {
     align-items: center;
     height: 100vh;
     text-align: center;
+}
+
+.welcome-message h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.welcome-message p {
+    font-size: 1.25rem;
+    margin-top: 10px;
 }
 
 /* Logout Dialog Overlay */
@@ -156,7 +166,7 @@ body {
 
 /* Logout Dialog Box */
 .logout-dialog {
-    background: #fcfaf2;
+    background: #FCFAF2;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -173,8 +183,8 @@ body {
 
 /* Confirm Button */
 .confirm-btn {
-    background-color: #1c1c1c;
-    color: #fcfaf2;
+    background-color: #1C1C1C;
+    color: #FCFAF2;
     border: none;
     padding: 8px 16px;
     cursor: pointer;
@@ -182,13 +192,13 @@ body {
 }
 
 .confirm-btn:hover {
-    background-color: #4f4f48;
+    background-color: #4F4F48;
 }
 
 /* Cancel Button */
 .cancel-btn {
-    background-color: #fcfaf2;
-    color: #1c1c1c;
+    background-color: #FCFAF2;
+    color: #1C1C1C;
     border: none;
     padding: 8px 16px;
     cursor: pointer;
@@ -196,5 +206,167 @@ body {
 }
 
 .cancel-btn:hover {
-    background-color: #4f4f48;
+    background-color: #4F4F48;
+}
+
+/* 
+.assets-page {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive;
+    image-rendering: pixelated;
+} */
+
+/* Multi-Chain Assets Styling */
+.multi-chain-assets {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: 'Press Start 2P', cursive;
+    image-rendering: pixelated;
+}
+
+.input-group input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #FCFAF2;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    background-color: #1C1C1C;
+    border: none;
+    border-radius: 5px;
+    color: #FCFAF2;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #4F4F48;
+}
+
+.token-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.token-table th,
+.token-table td {
+    border: 1px solid #FCFAF2;
+    padding: 8px;
+    text-align: left;
+}
+
+.token-table th {
+    background-color: #4F4F48;
+    font-weight: bold;
+}
+
+.notification-btn {
+    background-color: #1C1C1C;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.notification-btn:hover {
+    background-color: #4F4F48;
+}
+
+details summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -20%);
+    width: 600px;
+    height: 350px;
+    background: #1C1C1C;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px #1C1C1C;
+    z-index: 1000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dialog-buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.input-group {
+    margin: 10px 0;
+}
+
+.notification-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+.notification-table {
+    width: 80%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.notification-table th,
+.notification-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.notification-dialog-overlay {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -20%);
+    width: 600px;
+    height: 350px;
+    background: #1C1C1C;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px #1c1c1c;
+    z-index: 1000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.notification-dialog-buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+.notification-input-group {
+    margin: 10px 0;
+}
+
+/* toggleButton */
+.button-connected {
+    @apply bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors;
+}
+  
+.button-notConnected {
+    @apply bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors;
 }
