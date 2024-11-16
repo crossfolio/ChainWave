@@ -1,10 +1,6 @@
-import { useState } from "react";
-import {
-  SignProtocolClient,
-  SpMode,
-  EvmChains,
-} from "@ethsign/sp-sdk";
-import Cookies from "js-cookie";
+import { useState } from 'react';
+import { SignProtocolClient, SpMode, EvmChains } from '@ethsign/sp-sdk';
+import Cookies from 'js-cookie';
 
 export default function CreateAccountDialog({
   isOpen,
@@ -12,8 +8,8 @@ export default function CreateAccountDialog({
   onCreate,
   account,
 }) {
-  const [name, setName] = useState("");
-  const [schemaId, setSchemaId] = useState("0x14e");
+  const [name, setName] = useState('');
+  const [schemaId, setSchemaId] = useState('0x14e');
 
   const [isMessageSigned, setIsMessageSigned] = useState(false);
   const [isAttestationCreated, setIsAttestationCreated] = useState(false);
@@ -21,72 +17,73 @@ export default function CreateAccountDialog({
   if (!isOpen) return null;
 
   const client = new SignProtocolClient(SpMode.OnChain, {
-    chain: EvmChains.arbitrumSepolia,
+    chain: EvmChains.arbitrumSepolia
   });
 
   const handleCreateAccount = () => {
     if (!name) {
-      alert("Please enter your name.");
+      alert('Please enter your name.');
       return;
     }
     if (!isMessageSigned) {
-      alert("Please sign the message before proceeding.");
+      alert('Please sign the message before proceeding.');
       return;
     }
     if (!isAttestationCreated) {
-      alert("Please create an attestation before proceeding.");
+      alert('Please create an attestation before proceeding.');
       return;
     }
 
-    console.log("Creating account with name:", name);
-    onCreate(name);
+    const worldcoinId = Cookies.get('worldcoinId');
+    const address = Cookies.get('newAccount');
+    console.log('Creating account with name:', name);
+    console.log('Creating account with worldcoinId:', worldcoinId);
+    console.log('Creating account with address:', address);
+
+    onCreate(name, worldcoinId, address);
     onClose();
   };
 
   const createAttestation = async () => {
-    const worldcoinId = Cookies.get("worldcoinId");
+    const worldcoinId = Cookies.get('worldcoinId');
     if (!window.ethereum || !account || !schemaId || !worldcoinId) {
-      alert(
-        "Please ensure all fields are filled in, and MetaMask is connected"
-      );
+      alert('Please ensure all fields are filled in, and MetaMask is connected');
       return;
     }
 
     try {
       const message = JSON.stringify({
-        worldcoinId: worldcoinId,
+        worldcoinId: worldcoinId
       });
 
       const signedMessage = await window.ethereum.request({
-        method: "personal_sign",
-        params: [message, account],
+        method: 'personal_sign',
+        params: [message, account]
       });
 
       setIsMessageSigned(true);
 
       const attestationData = {
-        worldcoinSign: signedMessage,
+        worldcoinSign: signedMessage
       };
 
       const attestationRes = await client.createAttestation({
         schemaId: schemaId,
-        data: attestationData,
+        data: attestationData
       });
 
       setIsAttestationCreated(true);
 
-      console.log("Attestation Created:", attestationRes);
+      console.log('Attestation Created:', attestationRes);
     } catch (error) {
-      console.error("Failed to create attestation:", error);
+      console.error('Failed to create attestation:', error);
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
       <div className="bg-white rounded-lg shadow-lg w-96 p-6 text-center">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Create Account
-        </h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Create Account</h2>
 
         {/* Name Input Field */}
         <div className="mb-6">
@@ -101,7 +98,9 @@ export default function CreateAccountDialog({
 
         {/* Create Attestation Section */}
         <div className="flex items-center justify-center mb-4">
-          <p className={`mr-2 ${isMessageSigned ? 'text-green-500' : 'text-gray-500'}`}>
+          <p
+            className={`mr-2 ${isMessageSigned ? 'text-green-500' : 'text-gray-500'}`}
+          >
             Sign message
           </p>
           {isMessageSigned ? (
@@ -112,7 +111,9 @@ export default function CreateAccountDialog({
         </div>
 
         <div className="flex items-center justify-center mb-4">
-          <p className={`mr-2 ${isAttestationCreated ? 'text-green-500' : 'text-gray-500'}`}>
+          <p
+            className={`mr-2 ${isAttestationCreated ? 'text-green-500' : 'text-gray-500'}`}
+          >
             Create Attestation
           </p>
           {isAttestationCreated ? (

@@ -1,9 +1,9 @@
 .uniswap-swap-page {
-    padding: 20px;
-  }
-  .swap-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 400px;
-  }
+  padding: 20px;
+}
+.swap-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+}

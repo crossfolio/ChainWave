@@ -38,7 +38,7 @@ export default function UniswapSwap({ account }) {
       '0xdAC17F958D2ee523a2206206994597C13D831ec7',
       6,
       'USDT',
-      'Tether USD'
+      'Tether USD',
     );
     const amountInParsed = ethers.parseUnits(amountIn);
 
@@ -48,8 +48,8 @@ export default function UniswapSwap({ account }) {
       TradeType.EXACT_INPUT,
       {
         recipient: account,
-        slippageTolerance: 0.5
-      }
+        slippageTolerance: 0.5,
+      },
     );
 
     const swapTransaction = {
@@ -57,7 +57,7 @@ export default function UniswapSwap({ account }) {
       to: route.router,
       value: route.methodParameters.value,
       from: account,
-      gasLimit: ethers.utils.hexlify(1000000)
+      gasLimit: ethers.utils.hexlify(1000000),
     };
 
     try {
@@ -74,7 +74,11 @@ export default function UniswapSwap({ account }) {
       <h2>Uniswap V3 Swap</h2>
       <div className="swap-section">
         <label>Amount In (ETH):</label>
-        <input type="text" value={amountIn} onChange={(e) => setAmountIn(e.target.value)} />
+        <input
+          type="text"
+          value={amountIn}
+          onChange={(e) => setAmountIn(e.target.value)}
+        />
         <button onClick={initiateSwap}>Swap to USDT</button>
       </div>
       {transactionHash && <p>Transaction Hash: {transactionHash}</p>}

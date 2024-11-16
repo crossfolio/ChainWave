@@ -8,7 +8,11 @@ export default function NotificationList() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  const [notification, setNotification] = useState({ symbol: '', price: '', condition: 'greater' });
+  const [notification, setNotification] = useState({
+    symbol: '',
+    price: '',
+    condition: 'greater',
+  });
 
   const openDialog = (index) => {
     setEditIndex(index);
@@ -59,8 +63,6 @@ export default function NotificationList() {
             <tr key={index}>
               <td>{index + 1}</td>
               <td>{notification.symbol}</td>
-              {/* <td>{notification.condition}</td>
-              <td>{notification.price}</td> */}
               <td>
                 <button onClick={() => openDialog(index)}>Edit</button>
               </td>
