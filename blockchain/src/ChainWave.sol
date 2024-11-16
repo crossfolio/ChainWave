@@ -118,6 +118,15 @@ contract ChainWave is Ownable2Step {
         IERC20(token).transferFrom(user, address(this), amount);
     }
 
+    /// @notice Transfer tokens from contract to user
+    function _transferTokenOut(
+        address token,
+        address user,
+        uint256 amount
+    ) internal returns (bool result) {
+        result = IERC20(token).transfer(user, amount);
+    }
+
     /// @notice [cross-chain] send USDC only
     function departureUSDC(
         address user,
@@ -127,5 +136,16 @@ contract ChainWave is Ownable2Step {
     ) public returns (uint64 nonce) {
         _transferTokenIn(address(USDC), user, amount);
         nonce = _burnUSDC(amount, destinationDomain, destinationRecipient);
+    }
+
+    /// @notice [cross-chain] receive USDC only
+    function destinationUSDC(
+        bytes calldata messageBytes,
+        bytes calldata attestationSignature,
+        address user
+    ) public onlyOwner returns (bool result) {
+        _mintUSDC(messageBytes, attestationSignature);
+        uint256 usdcAmount = USDC.balanceOf(address(this));
+        result = _transferTokenOut(address(USDC), user, usdcAmount);
     }
 }
