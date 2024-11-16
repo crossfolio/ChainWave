@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-
+import { useNotification } from '../contexts/NotificationContext';
 import {
   fetchAssetsFromBlockscout,
   calculateTokenAmount,
@@ -25,6 +25,7 @@ export default function MultiChainAssets() {
   });
   const [viewMode, setViewMode] = useState('aggregated');
 
+  const { addNotification } = useNotification();
   const router = useRouter();
 
   useEffect(() => {
@@ -41,6 +42,35 @@ export default function MultiChainAssets() {
       alert('Please install MetaMask to connect your wallet.');
     }
   }, []);
+
+  useEffect(() => {
+    if (account) {
+      handleFetchAssets();
+    }
+  }, [account, router.pathname]);
+
+  const handleSubmit = async () => {
+    const notificationMessage = `Notification set for ${selectedToken.symbol} when price ${notification.condition === 'greater' ? '>' : '<'} $${notification.price}`;
+    addNotification(notificationMessage);
+
+    console.log(notificationMessage);
+
+    if (notification.autoSwap && window.ethereum) {
+      try {
+        const message = `Approve auto-swap from source chains: ${notification.autoSwapSourceChains.join(', ')} to target chain: ${notification.autoSwapChain} for ${selectedToken.symbol} to ${notification.autoSwapToken} when the price reaches $${notification.price}.`;
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [message, account],
+        });
+        console.log('Signature:', signature);
+      } catch (error) {
+        console.error('Signature request failed:', error);
+        alert('Signature request failed. Auto-swap will not be activated.');
+      }
+    }
+
+    closeDialog();
+  };
 
   useEffect(() => {
     if (account) {
@@ -143,26 +173,6 @@ export default function MultiChainAssets() {
       ...prev,
       autoSwapSourceChains: options.map((option) => option.value),
     }));
-  };
-
-  const handleSubmit = async () => {
-    console.log(`Notification set for ${selectedToken.symbol}:`, notification);
-
-    if (notification.autoSwap && window.ethereum) {
-      try {
-        const message = `Approve auto-swap from source chains: ${notification.autoSwapSourceChains.join(', ')} to target chain: ${notification.autoSwapChain} for ${selectedToken.symbol} to ${notification.autoSwapToken} when the price reaches $${notification.price}.`;
-        const signature = await window.ethereum.request({
-          method: 'personal_sign',
-          params: [message, account],
-        });
-        console.log('Signature:', signature);
-      } catch (error) {
-        console.error('Signature request failed:', error);
-        alert('Signature request failed. Auto-swap will not be activated.');
-      }
-    }
-
-    closeDialog();
   };
 
   return (
@@ -390,8 +400,9 @@ export default function MultiChainAssets() {
                             (chain) =>
                               chain.name !== notification.autoSwapChain &&
                               blockscoutData[chain.name]?.tokens?.some(
-                                (token) => token.symbol === selectedToken.symbol
-                              )
+                                (token) =>
+                                  token.symbol === selectedToken.symbol,
+                              ),
                           )
                           .map((chain) => (
                             <option key={chain.name} value={chain.name}>

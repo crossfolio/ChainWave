@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      return res.status(200).json({ success: true, account: 'YSC' });
+      return res.status(200).json({ success: true, name: 'YSC' });
     } catch (error) {
       console.error('Verification error:', error);
       return res.status(500).json({ success: false, detail: error.message });

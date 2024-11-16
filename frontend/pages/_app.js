@@ -1,12 +1,14 @@
 // _app.js
+import Head from 'next/head';
 import '../styles/globals.css';
 import { useState, useEffect, createContext, useContext } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
-import CreateAccountDialog from '../components/CreateAccountDialog';
+import CreateAccountDialog from '../components/CreateAccountDialog'; // 匯入建立帳號對話框
 import { useRouter } from 'next/router';
-import { connectMetaMask } from '../utils/metamask';
+import { connectMetaMask } from '../utils/metamask'; // 引入 connectMetaMask
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 const AuthContext = createContext();
 
@@ -63,7 +65,7 @@ function MyApp({ Component, pageProps }) {
     const response = await fetch('http://localhost:3001/api/users', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         walletAddress: address,
@@ -71,8 +73,8 @@ function MyApp({ Component, pageProps }) {
         worldId: worldcoinId,
         alarms: [],
         createdAt: '2024-11-08T07:55:02.417Z',
-        updatedAt: '2024-11-08T07:55:02.417Z'
-      })
+        updatedAt: '2024-11-08T07:55:02.417Z',
+      }),
     });
 
     const data = await response.json();
@@ -107,76 +109,83 @@ function MyApp({ Component, pageProps }) {
   };
 
   return (
-    <AuthContext.Provider value={authContextValue}>
-      <div id="app" className="min-h-screen flex">
-        {!isLoginPage && (
-          <Sidebar
-            account={account}
-            isCollapsed={isSidebarCollapsed}
-            toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          />
-        )}
-
-        <div
-          className={`flex flex-col ${
-            !isLoginPage && (isSidebarCollapsed ? 'ml-20' : 'ml-64')
-          } flex-1 transition-all duration-300`}
-        >
-          {!isLoginPage && (
-            <div className="flex justify-between items-center z-10 relative">
-              <Header
+    <>
+      <Head>
+        <link rel="icon" href="/img/logo.png" type="image/x-icon" />
+      </Head>
+      <NotificationProvider>
+        <AuthContext.Provider value={authContextValue}>
+          <div id="app" className="min-h-screen flex">
+            {!isLoginPage && (
+              <Sidebar
                 account={account}
-                onWalletConnected={() =>
-                  connectMetaMask(
-                    setAccount,
-                    setIsAuthenticated,
-                    showCreateAccountDialogHandler,
-                  )
-                }
-                onLogout={onLogout}
+                isCollapsed={isSidebarCollapsed}
+                toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
               />
-              <ThemeToggle />
-            </div>
-          )}
-
-          <main>
-            {isLoginPage || isAuthenticated ? (
-              <Component {...pageProps} account={account} />
-            ) : (
-              <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6">
-                {/* Main Title and Subtitle */}
-                <h1 className="text-5xl font-bold mb-4">
-                  Welcome to ChainWave!
-                </h1>
-                <p className="text-lg mb-8 max-w-xl text-center">
-                  ChainWave is a powerful tool that helps you monitor assets
-                  across multiple chains, offering token price tracking and
-                  automated secure cross-chain functionality to fully protect
-                  your assets.
-                </p>
-
-                {/* Button Section */}
-                <div className="flex space-x-4">
-                  <button className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-100 transition-all duration-300">
-                    Get Started
-                  </button>
-                  <button className="bg-blue-700 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-800 transition-all duration-300">
-                    Learn More
-                  </button>
-                </div>
-              </div>
             )}
-          </main>
-        </div>
-      </div>
 
-      <CreateAccountDialog
-        isOpen={showCreateAccountDialog}
-        onClose={() => setShowCreateAccountDialog(false)}
-        onCreate={handleAccountCreation}
-        account={account}
-      />
-    </AuthContext.Provider>
+            <div
+              className={`flex flex-col ${
+                !isLoginPage && (isSidebarCollapsed ? 'ml-20' : 'ml-64')
+              } flex-1 transition-all duration-300`}
+            >
+              {!isLoginPage && (
+                <div className="flex justify-between items-center z-10 relative">
+                  <Header
+                    account={account}
+                    onWalletConnected={() =>
+                      connectMetaMask(
+                        setAccount,
+                        setIsAuthenticated,
+                        showCreateAccountDialogHandler,
+                      )
+                    }
+                    onLogout={onLogout}
+                  />
+                  <ThemeToggle />
+                </div>
+              )}
+
+              <main>
+                {isLoginPage || isAuthenticated ? (
+                  <Component {...pageProps} account={account} />
+                ) : (
+                  <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6">
+                    {/* Main Title and Subtitle */}
+                    <h1 className="text-5xl font-bold mb-4">
+                      Welcome to ChainWave!
+                    </h1>
+                    <p className="text-lg mb-8 max-w-xl text-center">
+                      ChainWave is a powerful tool that helps you monitor assets
+                      across multiple chains, offering token price tracking and
+                      automated secure cross-chain functionality to fully
+                      protect your assets.
+                    </p>
+
+                    {/* Button Section */}
+                    <div className="flex space-x-4">
+                      <button className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-100 transition-all duration-300">
+                        Get Started
+                      </button>
+                      <button className="bg-blue-700 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-800 transition-all duration-300">
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </main>
+            </div>
+          </div>
+
+          <CreateAccountDialog
+            isOpen={showCreateAccountDialog}
+            onClose={() => setShowCreateAccountDialog(false)}
+            onCreate={handleAccountCreation}
+            account={account}
+          />
+        </AuthContext.Provider>
+      </NotificationProvider>
+    </>
   );
 }
 

@@ -16,6 +16,7 @@ export default function Sidebar({ account, isCollapsed, toggleSidebar }) {
   const router = useRouter();
 
   const navLinks = [
+    { name: 'CrossChain', path: '/', icon: <img src="/img/logo.png" /> },
     { name: 'Assets', path: '/multi-chain-assets', icon: <FaWallet /> },
     { name: 'Alerts', path: '/notification', icon: <FaBell /> },
     { name: 'X-Swap', path: '/crosschain-swap', icon: <FaExchangeAlt /> },

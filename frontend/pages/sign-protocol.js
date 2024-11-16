@@ -24,6 +24,7 @@ export default function SignProtocol({ account }) {
     'onchain_evm_421614_0x14e',
   );
   const [attestationId, setAttestationId] = useState('');
+
   const [worldcoinId, setWorldcoinId] = useState('');
 
   useEffect(() => {
@@ -148,6 +149,7 @@ export default function SignProtocol({ account }) {
 
       const res = decodeOnChainData(
         att,
+        // DataLocationOnChain.ONCHAIN,
         JSON.parse(schemaData),
       );
 
