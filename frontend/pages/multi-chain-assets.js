@@ -66,13 +66,19 @@ export default function MultiChainAssets() {
     const alarms = await getAlarms(savedAddress);
     const simplifiedAlarms = []
     if (alarms.status === 200) {
-      alarms.map(({ symbol, condition, price, status, isSwap }) => ({
-        symbol,
-        condition,
-        price,
-        status,
-        isSwap
-      }));
+      alarms.map(({ symbol, condition, price,
+        status, isSwap, srcChain,
+        dstChain, srcToken, destToken }) => ({
+          symbol,
+          condition,
+          price,
+          status,
+          isSwap,
+          srcChain,
+          dstChain,
+          srcToken,
+          destToken
+        }));
     }
     simplifiedAlarms.push({
       symbol: selectedToken.symbol,
