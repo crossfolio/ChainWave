@@ -357,4 +357,57 @@ contract ChainWave is Ownable2Step {
             _transferTokenOut(token0, user, outAmount);
         }
     }
+
+    /// @notice Auto swap and cross chain
+    function autoMultiChainSwap(
+        address token0,
+        address token1,
+        uint24 fee,
+        int24 tickSpacing,
+        address hookAddr,
+        int256 amountSpecified,
+        bool zeroForOne,
+        bytes memory hookData,
+        uint32 destinationDomain,
+        address destinationRecipient,
+        address user
+    ) public onlyOwner {
+        require(token0 != token1, "Swap token addresses are the same");
+        require(
+            token0 == address(USDC) || token1 == address(USDC),
+            "One of swapped tokens must be USDC"
+        );
+
+        if (zeroForOne && token1 != address(USDC)) {
+            revert("Output token is not USDC");
+        } else if (!zeroForOne && token0 != address(USDC)) {
+            revert("Output token is not USDC");
+        }
+
+        uint256 amountAbsolute = uint256(
+            amountSpecified < 0 ? -amountSpecified : amountSpecified
+        );
+
+        if (zeroForOne && token0 != address(0)) {
+            _transferTokenIn(token0, user, amountAbsolute);
+            IERC20(token0).approve(address(swapRouter), amountAbsolute);
+        } else if (!zeroForOne && token1 != address(0)) {
+            _transferTokenIn(token1, user, amountAbsolute);
+            IERC20(token1).approve(address(swapRouter), amountAbsolute);
+        }
+
+        this.singleChainSwap(
+            token0,
+            token1,
+            fee,
+            tickSpacing,
+            hookAddr,
+            amountSpecified,
+            zeroForOne,
+            hookData
+        );
+
+        uint256 usdcAmount = USDC.balanceOf(address(this));
+        _burnUSDC(usdcAmount, destinationDomain, destinationRecipient);
+    }
 }

@@ -86,7 +86,19 @@ contract SrcChainScript is Script {
         //     destinationRecipient
         // );
 
-        chainWave.autoSingleChainSwap(
+        // chainWave.autoSingleChainSwap(
+        //     token0,
+        //     token1,
+        //     fee,
+        //     tickSpacing,
+        //     hookAddr,
+        //     amountSpecified,
+        //     zeroForOne,
+        //     hookData,
+        //     user
+        // );
+
+        chainWave.autoMultiChainSwap(
             token0,
             token1,
             fee,
@@ -95,6 +107,8 @@ contract SrcChainScript is Script {
             amountSpecified,
             zeroForOne,
             hookData,
+            destinationDomain,
+            destinationRecipient,
             user
         );
 
