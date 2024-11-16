@@ -13,14 +13,22 @@ export class AlarmDTO extends BaseDTO {
   public price!: number
 
   @Example('active')
-  public status?: Status
+  public status!: Status
 
   @Example(true)
   public isSwap?: boolean
 
+  @Example('ETH')
   public srcChain?: string
 
+  @Example('ARB')
   public dstChain?: string
+
+  @Example('UNI')
+  public srcToken?: string
+
+  @Example('LINK')
+  public destToken?: string
 
   public _id?: string | null
 }
