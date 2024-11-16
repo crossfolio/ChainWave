@@ -80,16 +80,19 @@ export default function NotificationList() {
     try {
       const updatedAlarms = alarms.map((alarm) => {
         if (alarm._id === editAlarm._id) {
+          const { _id, ...rest } = alarm;
           return {
-            ...alarm,
+            ...rest,
             condition: editAlarm.condition,
-            price: editAlarm.price,
-            status: editAlarm.status,
-            isSwap: editAlarm.isSwap,
+            price: parseFloat(editAlarm.price),
           };
         }
-        return alarm;
+        const { _id, ...rest } = alarm;
+        return rest;
       });
+
+      console.log(updatedAlarms)
+
       const response = await fetch(
         `${apiBaseUrl}/api/users/${savedAddress}/alarms`,
         {
@@ -259,8 +262,8 @@ export default function NotificationList() {
                 onChange={handleEditChange}
                 className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
               >
-                <option value="greater">Greater than</option>
-                <option value="less">Less than</option>
+                <option value="greater than">Greater than</option>
+                <option value="less than">Less than</option>
               </select>
             </div>
             <div className="mb-4">
@@ -285,7 +288,10 @@ export default function NotificationList() {
               </button>
               <button
                 onClick={closeEditDialog}
-                className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                className={`px-4 py-2 rounded-md font-medium focus:outline-none transition-colors ${isDarkMode
+                  ? 'bg-gray-600 text-white hover:bg-gray-500'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
               >
                 Cancel
               </button>
@@ -304,12 +310,15 @@ export default function NotificationList() {
               <p><strong>Source Chain:</strong> {swapDetails.srcChain}</p>
               <p><strong>Destination Chain:</strong> {swapDetails.dstChain}</p>
               <p><strong>Source Token:</strong> {swapDetails.symbol}</p>
-              <p><strong>Destination Token:</strong> {swapDetails.dstToken}</p>
+              <p><strong>Destination Token:</strong> {swapDetails.destToken}</p>
             </div>
             <div className="flex justify-end mt-6">
               <button
                 onClick={closeSwapDialog}
-                className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                className={`px-4 py-2 rounded-md font-medium focus:outline-none transition-colors ${isDarkMode
+                  ? 'bg-gray-600 text-white hover:bg-gray-500'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
               >
                 Close
               </button>

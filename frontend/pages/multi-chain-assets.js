@@ -64,22 +64,20 @@ export default function MultiChainAssets() {
   const handleSubmit = async () => {
     const savedAddress = Cookies.get('newAccount');
     const alarms = await getAlarms(savedAddress);
-    const simplifiedAlarms = []
-    if (alarms.status === 200) {
-      alarms.map(({ symbol, condition, price,
-        status, isSwap, srcChain,
-        dstChain, srcToken, destToken }) => ({
-          symbol,
-          condition,
-          price,
-          status,
-          isSwap,
-          srcChain,
-          dstChain,
-          srcToken,
-          destToken
-        }));
-    }
+    const simplifiedAlarms = alarms.map(({ symbol, condition, price,
+      status, isSwap, srcChain,
+      dstChain, srcToken, destToken }) => ({
+        symbol,
+        condition,
+        price,
+        status,
+        isSwap,
+        srcChain,
+        dstChain,
+        srcToken,
+        destToken
+      }));
+
     simplifiedAlarms.push({
       symbol: selectedToken.symbol,
       condition: notification.condition === 'greater' ? 'greater than' : 'less than',
@@ -91,6 +89,8 @@ export default function MultiChainAssets() {
       srcToken: selectedToken.symbol,
       destToken: notification.autoSwapToken
     });
+
+    console.log(simplifiedAlarms)
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/users/${savedAddress}/alarms`, {
