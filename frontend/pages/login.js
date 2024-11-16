@@ -10,18 +10,15 @@ export default function WorldCoin() {
   const router = useRouter();
   const { setOpen } = useIDKit();
 
-  // 驗證成功後的處理
   const onSuccess = (result) => {
     console.log(
       'Verification successful with World ID. Nullifier hash:',
       result.nullifier_hash,
     );
 
-    // 驗證成功後，將成功資訊保存到 cookie 中
-    Cookies.set('isAuthenticated', 'true', { expires: 1 }); // cookie 有效期為 1 天
-    Cookies.set('worldcoinId', result.nullifier_hash, { expires: 1 }); // cookie 有效期為 1 天
+    Cookies.set('isAuthenticated', 'true', { expires: 1 });
+    Cookies.set('worldcoinId', result.nullifier_hash, { expires: 1 });
 
-    // 重定向到原始頁面或首頁
     const redirectTo = router.query.redirectTo || '/';
     router.push(redirectTo);
   };
@@ -36,12 +33,12 @@ export default function WorldCoin() {
       const response = await fetch('http://localhost:3001/api/verify', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           proof: result,
-          signal: result.signal
-        })
+          signal: result.signal,
+        }),
       });
 
       const data = await response.json();
@@ -69,7 +66,10 @@ export default function WorldCoin() {
           handleVerify={handleProof}
           verification_level={VerificationLevel.Device}
         />
-        <button className="border border-black rounded-md" onClick={() => setOpen(true)}>
+        <button
+          className="border border-black rounded-md"
+          onClick={() => setOpen(true)}
+        >
           <div className="mx-3 my-1">Verify with World ID</div>
         </button>
       </div>

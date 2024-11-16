@@ -17,7 +17,7 @@ export default function CreateAccountDialog({
   if (!isOpen) return null;
 
   const client = new SignProtocolClient(SpMode.OnChain, {
-    chain: EvmChains.arbitrumSepolia
+    chain: EvmChains.arbitrumSepolia,
   });
 
   const handleCreateAccount = () => {
@@ -47,29 +47,31 @@ export default function CreateAccountDialog({
   const createAttestation = async () => {
     const worldcoinId = Cookies.get('worldcoinId');
     if (!window.ethereum || !account || !schemaId || !worldcoinId) {
-      alert('Please ensure all fields are filled in, and MetaMask is connected');
+      alert(
+        'Please ensure all fields are filled in, and MetaMask is connected',
+      );
       return;
     }
 
     try {
       const message = JSON.stringify({
-        worldcoinId: worldcoinId
+        worldcoinId: worldcoinId,
       });
 
       const signedMessage = await window.ethereum.request({
         method: 'personal_sign',
-        params: [message, account]
+        params: [message, account],
       });
 
       setIsMessageSigned(true);
 
       const attestationData = {
-        worldcoinSign: signedMessage
+        worldcoinSign: signedMessage,
       };
 
       const attestationRes = await client.createAttestation({
         schemaId: schemaId,
-        data: attestationData
+        data: attestationData,
       });
 
       setIsAttestationCreated(true);
@@ -83,7 +85,9 @@ export default function CreateAccountDialog({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
       <div className="bg-white rounded-lg shadow-lg w-96 p-6 text-center">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Create Account</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          Create Account
+        </h2>
 
         {/* Name Input Field */}
         <div className="mb-6">
