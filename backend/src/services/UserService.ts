@@ -63,6 +63,7 @@ export class UserService {
           symbol: alarmInfo.symbol,
           condition: alarmInfo.condition,
           price: alarmInfo.price,
+          isSwap: alarmInfo.isSwap,
         })
 
         if (!alarm) {
@@ -72,6 +73,9 @@ export class UserService {
           alarm.condition = alarmInfo.condition
           alarm.price = alarmInfo.price
           alarm.status = alarmInfo.status as Status
+          alarm.isSwap = alarmInfo.isSwap as boolean
+          alarm.srcChain = alarmInfo.srcChain
+          alarm.dstChain = alarmInfo.dstChain
           if (
             !alarm.users.includes(user._id as unknown as Schema.Types.ObjectId)
           ) {
