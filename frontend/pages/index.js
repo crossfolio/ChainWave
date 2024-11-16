@@ -1,5 +1,9 @@
+import { useTheme } from '../contexts/ThemeContext';
+
 // pages/index.js
 export default function Home() {
+  const { isDarkMode } = useTheme();
+
   return (
     <div>
       <div
@@ -18,7 +22,11 @@ export default function Home() {
             alt="ChainWave"
             className="w-32 h-32 mb-4"
           />
-          <h1 className="text-3xl font-bold">Welcome to ChainWave! ⌐◘-◘</h1>
+          <h1
+            className={`text-3xl font-bold ${isDarkMode ? 'text-gray-800' : 'text-gray-800'}`}
+          >
+            Welcome to ChainWave! ⌐◘-◘
+          </h1>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import {
   EvmChains,
   IndexService,
   decodeOnChainData,
-} from '@ethsign/sp-sdk';
+} from '@ethsign/sp-sdk'; // 新增 IndexService 引入
 
 export default function SignProtocol({ account }) {
   const [deviceId, setDeviceId] = useState('');
@@ -19,11 +19,11 @@ export default function SignProtocol({ account }) {
     '[{"name":"worldcoinSign","type":"string","required":true}]',
   );
   const [query, setQuery] = useState(null);
-  const [queryResults, setQueryResults] = useState([]);
+  const [queryResults, setQueryResults] = useState([]); // 用於存儲查詢結果
   const [querySchemaId, setQuerySchemaId] = useState(
     'onchain_evm_421614_0x14e',
   );
-  const [attestationId, setAttestationId] = useState('');
+  const [attestationId, setAttestationId] = useState(''); // 新增 attestationId 狀態
 
   const [worldcoinId, setWorldcoinId] = useState('');
 
@@ -58,7 +58,7 @@ export default function SignProtocol({ account }) {
         },
       });
       console.log('Schema created successfully:', createSchemaRes);
-      setSchemaId(createSchemaRes.schemaId);
+      setSchemaId(createSchemaRes.schemaId); // 自動設置創建的 schemaId
     } catch (error) {
       console.error('Failed to create schema:', error);
     }
@@ -87,19 +87,23 @@ export default function SignProtocol({ account }) {
     }
 
     try {
+      // 構建訊息用於簽名
       const message = JSON.stringify({
         worldcoinId: worldcoinId,
       });
 
+      // 使用 MetaMask 簽署訊息
       const signedMessage = await window.ethereum.request({
         method: 'personal_sign',
         params: [message, account],
       });
 
+      // 構建 Attestation Data
       const attestationData = {
         worldcoinSign: signedMessage,
       };
 
+      // 發送 Attestation 請求
       const attestationRes = await client.createAttestation({
         schemaId: schemaId,
         data: attestationData,
@@ -118,7 +122,7 @@ export default function SignProtocol({ account }) {
 
     try {
       const response = await client.revokeAttestation(attestationId, {
-        reason: 'User requested revocation',
+        reason: 'User requested revocation', // 可選的撤銷原因
       });
       console.log('Attestation Revoked:', response);
       alert('Attestation has been successfully revoked.');
@@ -128,6 +132,7 @@ export default function SignProtocol({ account }) {
     }
   };
 
+  // 新增查詢 Attestation 的函數
   const queryAttestations = async () => {
     if (!querySchemaId) {
       alert('Please enter a schema id to query attestations');
@@ -135,14 +140,15 @@ export default function SignProtocol({ account }) {
     }
 
     try {
-      const indexService = new IndexService('testnet');
-      console.log('Querying attestations with schemaId:', querySchemaId);
+      const indexService = new IndexService('testnet'); // 使用 sepolia 鏈
+      console.log('Querying attestations with schemaId:', querySchemaId); // 調試信息
 
       const response = await indexService.queryAttestationList({
         schemaId: querySchemaId,
         page: 1,
         mode: 'onchain',
       });
+      // const response = await indexService.querySchema("onchain_evm_11155111_0x2c3");
       console.log('Query response:', response);
 
       const att = response.rows[0].data;
@@ -196,7 +202,10 @@ export default function SignProtocol({ account }) {
           />
           <button
             onClick={createSchema}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            className="text-white py-2 px-4 rounded"
+            style={{ backgroundColor: '#007EA7' }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
           >
             Create Schema
           </button>
@@ -215,7 +224,10 @@ export default function SignProtocol({ account }) {
           />
           <button
             onClick={getSchema}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            className="text-white py-2 px-4 rounded"
+            style={{ backgroundColor: '#007EA7' }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
           >
             Get Schema
           </button>
@@ -250,7 +262,11 @@ export default function SignProtocol({ account }) {
 
           <button
             onClick={createAttestation}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            className="text-white py-2 px-4 rounded"
+            style={{ backgroundColor: '#007EA7' }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
+
           >
             Create Attestation
           </button>
@@ -268,7 +284,10 @@ export default function SignProtocol({ account }) {
           />
           <button
             onClick={queryAttestations}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            className="text-white py-2 px-4 rounded"
+            style={{ backgroundColor: '#007EA7' }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
           >
             Query Attestations
           </button>
@@ -296,7 +315,7 @@ export default function SignProtocol({ account }) {
           />
           <button
             onClick={revokeAttestation}
-            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-400"
           >
             Revoke Attestation
           </button>

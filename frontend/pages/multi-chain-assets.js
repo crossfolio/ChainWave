@@ -7,6 +7,16 @@ import {
   getPrices,
 } from '../utils/getTokenList';
 import { chains } from '../utils/chainsConfig';
+import { useTheme } from '../contexts/ThemeContext';
+import Cookies from 'js-cookie'; // 引入 js-cookie 庫來操作 cookie
+import {
+  contractAddress,
+  UNIAddress,
+  UNIContractABI,
+  USDCAddress,
+  USDCContractABI,
+} from '../constants/crossChainSwapContract';
+import { ethers } from 'ethers';
 
 export default function MultiChainAssets() {
   const [account, setAccount] = useState('');
@@ -26,6 +36,7 @@ export default function MultiChainAssets() {
   const [viewMode, setViewMode] = useState('aggregated');
 
   const { addNotification } = useNotification();
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -50,33 +61,81 @@ export default function MultiChainAssets() {
   }, [account, router.pathname]);
 
   const handleSubmit = async () => {
-    const notificationMessage = `Notification set for ${selectedToken.symbol} when price ${notification.condition === 'greater' ? '>' : '<'} $${notification.price}`;
-    addNotification(notificationMessage);
+    const savedAddress = Cookies.get('newAccount');
+    const alarms = await getAlarms(savedAddress);
+    const simplifiedAlarms = alarms.map(({ symbol, condition, price }) => ({
+      symbol,
+      condition,
+      price,
+    }));
+    simplifiedAlarms.push({
+      symbol: selectedToken.symbol,
+      condition: notification.condition === 'greater' ? 'greater than' : 'less than',
+      price: parseFloat(notification.price),
+      status: "active",
+      isSwap: notification.autoSwap,
+    });
 
-    console.log(notificationMessage);
+    try {
+      const response = await fetch(`http://localhost:3001/api/users/${savedAddress}/alarms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(simplifiedAlarms),
+      });
 
+      const data = await response.json();
+      console.log('API response:', data);
+
+      const notificationMessage = `Notification set for ${selectedToken.symbol} when price ${notification.condition === 'greater' ? '>' : '<'} $${notification.price}`;
+      addNotification(notificationMessage);
+
+      console.log(notificationMessage);
+      alert('Alarm set successfully.');
+    } catch (error) {
+      console.error('Error during API call:', error);
+      alert('Fail to set alarm.');
+    }
+
+    // approve
     if (notification.autoSwap && window.ethereum) {
       try {
-        const message = `Approve auto-swap from source chains: ${notification.autoSwapSourceChains.join(', ')} to target chain: ${notification.autoSwapChain} for ${selectedToken.symbol} to ${notification.autoSwapToken} when the price reaches $${notification.price}.`;
-        const signature = await window.ethereum.request({
-          method: 'personal_sign',
-          params: [message, account],
-        });
-        console.log('Signature:', signature);
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        const signer = await provider.getSigner();
+        // 授權 crossChainSwapContract 使用您的代幣
+        // 設置 UNI 的 ERC20 合約
+        const UNIContract = new ethers.Contract(
+          UNIAddress,
+          UNIContractABI,
+          signer,
+        );
+        // 設置 USDC 的 ERC20 合約
+        const USDCContract = new ethers.Contract(
+          USDCAddress,
+          USDCContractABI,
+          signer,
+        );
+
+        //(2^256 - 1 )
+        let tokenAmount = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+        if (selectedToken.symbol === 'UNI') {
+          await UNIContract.approve(contractAddress, tokenAmount);
+        } else if (selectedToken.symbol === 'USDC') {
+          await USDCContract.approve(contractAddress, tokenAmount);
+        } else {
+          console.log('No approval needed for this token');
+        }
+        alert('approve successfully.');
       } catch (error) {
-        console.error('Signature request failed:', error);
-        alert('Signature request failed. Auto-swap will not be activated.');
+        console.error('request failed:', error);
+        alert('request failed. Auto-swap will not be activated.');
       }
     }
 
     closeDialog();
   };
-
-  useEffect(() => {
-    if (account) {
-      handleFetchAssets();
-    }
-  }, [account, router.pathname]);
 
   const handleFetchAssets = async () => {
     if (account) {
@@ -137,6 +196,15 @@ export default function MultiChainAssets() {
         aggregated[key].details.push({ chain: chain.displayName, amount });
       });
     });
+
+    // TODO: 猴子寫法
+    if (aggregated['UNI']) {
+      localStorage.setItem('totalAmount_UNI', aggregated['UNI'].total);
+    }
+    if (aggregated['USDC']) {
+      localStorage.setItem('totalAmount_USDC', aggregated['USDC'].total);
+    }
+
     return aggregated;
   };
 
@@ -175,12 +243,30 @@ export default function MultiChainAssets() {
     }));
   };
 
+  const getAlarms = async (wallet_address) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/users/${wallet_address}/alarms`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error during get user info:', error);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center">
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">
-        Multi-Chain Assets Query
-      </h2>
-      <p className="text-gray-500 mb-6">
+    <div
+      className={`min-h-screen p-6 flex flex-col items-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}
+    >
+      <h2 className="text-3xl font-bold mb-4">Multi-Chain Assets Query</h2>
+      <p className="mb-6">
         Track and manage your assets across multiple chains with ease.
       </p>
 
@@ -189,29 +275,38 @@ export default function MultiChainAssets() {
           onClick={() =>
             setViewMode(viewMode === 'aggregated' ? 'separate' : 'aggregated')
           }
-          className="bg-green-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
+          className="font-semibold px-4 py-2 rounded-lg transition-all text-white"
+          style={{
+            backgroundColor: isDarkMode ? '#34B4CC' : '#007EA7',
+          }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = isDarkMode ? '#2CA3B7' : '#34B4CC')}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = isDarkMode ? '#34B4CC' : '#007EA7')}
         >
           {viewMode === 'aggregated' ? 'Show Separate' : 'Show Aggregated'}
         </button>
       </div>
 
       {loading && (
-        <p className="text-blue-500 text-lg mt-4">Loading assets...</p>
+        <p className="text-lg mt-4" style={{ color: '#007EA7' }}>Loading assets...</p>
       )}
       {error && <p className="text-red-500 text-lg mt-4">Error: {error}</p>}
 
       {!loading &&
         !error &&
         (viewMode === 'aggregated' ? (
-          <table className="w-full max-w-4xl mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
-            <thead>
-              <tr className="bg-blue-500 text-white">
-                <th className="px-4 py-2">#</th>
-                <th className="px-4 py-2">Symbol</th>
-                <th className="px-4 py-2">Price</th>
-                <th className="px-4 py-2">Total Amount</th>
-                <th className="px-4 py-2">Details</th>
-                <th className="px-4 py-2">Add to Notification</th>
+          <table
+            className={`w-full max-w-4xl mt-8 shadow-lg rounded-lg overflow-hidden ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}`}
+          >
+            <thead
+              className={`${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'}`}
+            >
+              <tr>
+                <th className="px-4 py-2 text-left">#</th>
+                <th className="px-4 py-2 text-left">Symbol</th>
+                <th className="px-4 py-2 text-left">Price</th>
+                <th className="px-4 py-2 text-left">Total Amount</th>
+                <th className="px-4 py-2 text-center">Details</th>
+                <th className="px-4 py-2 text-center">Add to Notification</th>
               </tr>
             </thead>
             <tbody>
@@ -224,12 +319,12 @@ export default function MultiChainAssets() {
                     <td className="px-4 py-2">{total}</td>
                     <td className="px-4 py-2">
                       <details>
-                        <summary className="text-blue-500 cursor-pointer">
+                        <summary className="cursor-pointer" style={{ color: '#007EA7' }}>
                           View Details
                         </summary>
                         <ul className="pl-4">
                           {details.map((detail, i) => (
-                            <li key={i} className="text-sm text-gray-600">
+                            <li key={i} className="text-sm">
                               {detail.chain}: {detail.amount}
                             </li>
                           ))}
@@ -239,7 +334,12 @@ export default function MultiChainAssets() {
                     <td className="text-center flex justify-center px-4 py-2">
                       <button
                         onClick={() => openDialog(symbol, price)}
-                        className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-200 transition-all"
+                        className="px-3 py-1 rounded-full transition-all text-white"
+                        style={{
+                          backgroundColor: isDarkMode ? '#34B4CC' : '#007EA7',
+                        }}
+                        onMouseEnter={(e) => (e.target.style.backgroundColor = isDarkMode ? '#2CA3B7' : '#34B4CC')}
+                        onMouseLeave={(e) => (e.target.style.backgroundColor = isDarkMode ? '#34B4CC' : '#007EA7')}
                       >
                         Add Notification
                       </button>
@@ -253,19 +353,23 @@ export default function MultiChainAssets() {
           chains.map((chain) => (
             <div
               key={chain.name}
-              className="w-full max-w-4xl mt-8 bg-white shadow-lg rounded-lg overflow-hidden mb-6"
+              className={`w-full max-w-4xl mt-8 shadow-lg rounded-lg overflow-hidden mb-6 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'}`}
             >
-              <h3 className="bg-blue-500 text-white px-4 py-2 text-lg font-semibold">
+              <h3
+                className={`text-white px-4 py-2 text-lg font-semibold ${isDarkMode ? 'bg-gray-700' : 'bg-gray-800 '}`}
+              >
                 {chain.displayName}
               </h3>
               <table className="w-full">
-                <thead>
-                  <tr className="bg-blue-200 text-blue-700">
-                    <th className="px-4 py-2">#</th>
-                    <th className="px-4 py-2">Symbol</th>
-                    <th className="px-4 py-2">Price</th>
-                    <th className="px-4 py-2">Amount</th>
-                    <th className="px-4 py-2">Add to Notification</th>
+                <thead
+                  className={`${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-800 text-white'}`}
+                >
+                  <tr>
+                    <th className="px-4 py-2 text-left">#</th>
+                    <th className="px-4 py-2 text-left">Symbol</th>
+                    <th className="px-4 py-2 text-left">Price</th>
+                    <th className="px-4 py-2 text-left">Amount</th>
+                    <th className="px-4 py-2 text-center">Add to Notification</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -289,7 +393,12 @@ export default function MultiChainAssets() {
                           onClick={() =>
                             openDialog(token.symbol, token.price || 0)
                           }
-                          className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-200 transition-all"
+                          className="px-3 py-1 rounded-full transition-all text-white"
+                          style={{
+                            backgroundColor: isDarkMode ? '#34B4CC' : '#007EA7',
+                          }}
+                          onMouseEnter={(e) => (e.target.style.backgroundColor = isDarkMode ? '#2CA3B7' : '#34B4CC')}
+                          onMouseLeave={(e) => (e.target.style.backgroundColor = isDarkMode ? '#34B4CC' : '#007EA7')}
                         >
                           Add Notification
                         </button>
@@ -304,39 +413,35 @@ export default function MultiChainAssets() {
 
       {isDialogOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-            <h3 className="text-xl font-bold text-blue-600 mb-4">
+          <div
+            className={`p-6 rounded-lg shadow-lg w-full max-w-sm ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+          >
+            <h3 className="text-xl font-bold mb-4">
               Set Notification for {selectedToken.symbol}
             </h3>
-            <p className="text-gray-500 mb-4">
-              Current Price: ${selectedToken.price}
-            </p>
+            <p className="mb-4">Current Price: ${selectedToken.price.toFixed(2)}</p>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Condition:
-                </label>
+                <label className="block text-sm font-medium">Condition:</label>
                 <select
                   name="condition"
                   value={notification.condition}
                   onChange={handleInputChange}
-                  className="w-full border rounded-lg p-2"
+                  className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                 >
                   <option value="greater">Greater than</option>
                   <option value="less">Less than</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Price:
-                </label>
+                <label className="block text-sm font-medium">Price:</label>
                 <input
                   type="number"
                   name="price"
                   value={notification.price}
                   onChange={handleInputChange}
                   placeholder="Enter price"
-                  className="w-full border rounded-lg p-2"
+                  className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                 />
               </div>
               <div>
@@ -348,20 +453,20 @@ export default function MultiChainAssets() {
                     onChange={handleInputChange}
                     className="form-checkbox"
                   />
-                  <span className="text-sm text-gray-700">Auto Swap</span>
+                  <span className="text-sm">Auto Swap</span>
                 </label>
               </div>
               {notification.autoSwap && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium">
                       Target Chain:
                     </label>
                     <select
                       name="autoSwapChain"
                       value={notification.autoSwapChain}
                       onChange={handleInputChange}
-                      className="w-full border rounded-lg p-2"
+                      className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                     >
                       {chains.map((chain) => (
                         <option key={chain.name} value={chain.name}>
@@ -371,7 +476,7 @@ export default function MultiChainAssets() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium">
                       Target Token:
                     </label>
                     <input
@@ -380,29 +485,26 @@ export default function MultiChainAssets() {
                       value={notification.autoSwapToken}
                       onChange={handleInputChange}
                       placeholder="Enter target token symbol"
-                      className="w-full border rounded-lg p-2"
+                      className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                     />
                   </div>
                   {viewMode === 'aggregated' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium">
                         Source Chains:
                       </label>
                       <select
                         name="autoSwapSourceChains"
                         value={notification.autoSwapSourceChains}
                         onChange={handleSourceChainsChange}
-                        className="w-full border rounded-lg p-2"
+                        className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                         multiple
                       >
                         {chains
-                          .filter(
-                            (chain) =>
-                              chain.name !== notification.autoSwapChain &&
-                              blockscoutData[chain.name]?.tokens?.some(
-                                (token) =>
-                                  token.symbol === selectedToken.symbol,
-                              ),
+                          .filter((chain) =>
+                            blockscoutData[chain.name]?.tokens?.some(
+                              (token) => token.symbol === selectedToken.symbol,
+                            )
                           )
                           .map((chain) => (
                             <option key={chain.name} value={chain.name}>
@@ -417,13 +519,18 @@ export default function MultiChainAssets() {
               <div className="flex justify-end mt-6 space-x-4">
                 <button
                   onClick={handleSubmit}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                  className="px-4 py-2 rounded-lg font-medium transition-all text-white"
+                  style={{
+                    backgroundColor: isDarkMode ? '#34B4CC' : '#007EA7'
+                  }}
+                  onMouseEnter={(e) => (e.target.style.backgroundColor = isDarkMode ? '#2CA3B7' : '#34B4CC')}
+                  onMouseLeave={(e) => (e.target.style.backgroundColor = isDarkMode ? '#34B4CC' : '#007EA7')}
                 >
                   Confirm
                 </button>
                 <button
                   onClick={closeDialog}
-                  className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${isDarkMode ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
                 >
                   Cancel
                 </button>

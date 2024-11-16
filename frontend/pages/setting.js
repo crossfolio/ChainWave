@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { formatAddress } from '../utils/util';
 import { queryAttestationsId } from '../utils/signProtocol';
 import { SignProtocolClient, SpMode, EvmChains } from '@ethsign/sp-sdk';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function SettingPage() {
   const [isEditing, setIsEditing] = useState(false);
@@ -14,15 +15,17 @@ export default function SettingPage() {
   const [isAttestationCreated, setIsAttestationCreated] = useState(false);
   const [schemaId, setSchemaId] = useState('0x14e');
   let [username, setUsername] = useState('');
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
+      const savedAddress = Cookies.get('newAccount');
       const savedWorldcoinId = Cookies.get('worldcoinId');
       if (savedWorldcoinId) {
         setWorldcoinId(savedWorldcoinId);
       }
 
-      const userInfo = await getUserInfo(savedWorldcoinId);
+      const userInfo = await getUserInfo(savedAddress);
       if (userInfo && userInfo.name) {
         setUsername(userInfo.name);
       }
@@ -45,15 +48,14 @@ export default function SettingPage() {
   }, []);
 
   useEffect(() => {
-
     const updatedProfileImage = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(username)}`;
     setProfileImage(updatedProfileImage);
   }, [username]);
 
   const handleSave = async () => {
-    const worldcoinId = Cookies.get('worldcoinId');
+    const savedAddress = Cookies.get('newAccount');
     if (worldcoinId) {
-      await updateUserInfo(worldcoinId);
+      await updateUserInfo(savedAddress);
     }
     setIsEditing(false);
   };
@@ -126,10 +128,10 @@ export default function SettingPage() {
     }
   };
 
-  const getUserInfo = async (worldcoinId) => {
+  const getUserInfo = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${worldcoinId}`,
+        `http://localhost:3001/api/users/${wallet_address}`,
         {
           method: 'GET',
           headers: {
@@ -147,10 +149,10 @@ export default function SettingPage() {
     }
   };
 
-  const updateUserInfo = async (worldcoinId) => {
+  const updateUserInfo = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${worldcoinId}`,
+        `http://localhost:3001/api/users/${wallet_address}`,
         {
           method: 'PUT',
           headers: {
@@ -177,16 +179,20 @@ export default function SettingPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 p-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-10 text-center">
-        Account Settings
-      </h2>
+    <div
+      className={`w-full min-h-screen p-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}
+    >
+      <h2 className="text-3xl font-bold mb-10 text-center">Account Settings</h2>
 
-      <div className="bg-white p-8 rounded-lg shadow-lg mx-auto w-full max-w-4xl mb-10">
+      <div
+        className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-8 rounded-lg shadow-lg mx-auto w-full max-w-4xl mb-10`}
+      >
         {/* Profile Image Section */}
         <div className="flex items-center space-x-6 mb-6">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-300">
+            <div
+              className={`w-24 h-24 rounded-full overflow-hidden ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}
+            >
               {profileImage ? (
                 <img
                   src={profileImage}
@@ -194,20 +200,26 @@ export default function SettingPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="flex items-center justify-center text-2xl font-semibold text-gray-500">
+                <span
+                  className={`flex items-center justify-center text-2xl font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}
+                >
                   JD
                 </span>
               )}
             </div>
           </div>
           <div>
-            <p className="text-gray-600">Profile Picture</p>
+            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Profile Picture
+            </p>
           </div>
         </div>
 
         {/* Username */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">
+          <label
+            className={`block text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}
+          >
             Username
           </label>
           {isEditing ? (
@@ -215,28 +227,42 @@ export default function SettingPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              className={`mt-1 w-full p-3 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-blue-500`}
               placeholder="Enter your username"
             />
           ) : (
-            <p className="text-lg text-gray-800">{username}</p>
+            <p
+              className={`text-lg ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              {username}
+            </p>
           )}
         </div>
 
         {/* Worldcoin ID */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">
+          <label
+            className={`block text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}
+          >
             Worldcoin ID
           </label>
-          <p className="text-lg text-gray-800">{worldcoinId}</p>
+          <p
+            className={`text-lg ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+          >
+            {worldcoinId}
+          </p>
         </div>
 
         {/* Account Address */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">
+          <label
+            className={`block text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}
+          >
             Account Address
           </label>
-          <p className="text-lg text-gray-800 break-words">
+          <p
+            className={`text-lg break-words ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+          >
             {accountAddress ? formatAddress(accountAddress) : 'Not connected'}
           </p>
         </div>
@@ -247,7 +273,10 @@ export default function SettingPage() {
             <>
               <button
                 onClick={handleSave}
-                className="bg-blue-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="text-white py-2 px-6 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
+                style={{ backgroundColor: '#007EA7' }}
+                onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
               >
                 Save Changes
               </button>
@@ -261,7 +290,10 @@ export default function SettingPage() {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-blue-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="text-white py-2 px-6 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={{ backgroundColor: '#007EA7' }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
             >
               Edit Profile
             </button>
@@ -270,10 +302,10 @@ export default function SettingPage() {
       </div>
 
       {/* Create Attestation Section */}
-      <div className="bg-white p-8 rounded-lg shadow-lg mx-auto w-full max-w-4xl mb-10">
-        <h3 className="text-2xl font-semibold text-gray-700 mb-6">
-          Create Attestation
-        </h3>
+      <div
+        className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-8 rounded-lg shadow-lg mx-auto w-full max-w-4xl mb-10`}
+      >
+        <h3 className="text-2xl font-semibold mb-6">Create Attestation</h3>
         <div className="flex items-center mb-4">
           <p
             className={`mr-2 ${isMessageSigned ? 'text-green-500' : 'text-gray-500'}`}
@@ -302,30 +334,35 @@ export default function SettingPage() {
 
         <button
           onClick={createAttestation}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="text-white py-2 px-6 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
+          style={{ backgroundColor: '#007EA7' }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
         >
           Create Attestation
         </button>
       </div>
 
       {/* Revoke Attestation Section */}
-      <div className="bg-white p-6 rounded-lg shadow-lg mx-auto w-full max-w-4xl">
-        <h3 className="text-2xl font-semibold text-gray-700 mb-6">
-          Revoke Attestation
-        </h3>
-        <label className="block text-sm font-small text-gray-700 mb-2">
+      <div
+        className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-lg mx-auto w-full max-w-4xl`}
+      >
+        <h3 className="text-2xl font-semibold mb-6">Revoke Attestation</h3>
+        <label
+          className={`block text-sm font-small mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}
+        >
           Please enter the worldcoin ID to revoke
         </label>
         <input
           type="text"
           value={revokeConfirmation}
           onChange={(e) => setRevokeConfirmation(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 mb-4"
+          className={`w-full p-3 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:outline-none focus:border-blue-500 mb-4`}
           placeholder="Enter worldcoin ID"
         />
         <button
           onClick={revokeAttestation}
-          className="bg-red-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+          className="bg-red-500 text-white py-2 px-6 rounded-lg font-medium hover:bg-red-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Revoke Attestation
         </button>
