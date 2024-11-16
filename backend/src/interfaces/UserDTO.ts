@@ -1,5 +1,6 @@
 import { Example } from 'tsoa'
 import { BaseDTO } from './BaseDTO'
+import { AlarmDTO } from './AlarmDTO'
 
 export class UserDTO extends BaseDTO {
   @Example('walletAddress')
@@ -10,4 +11,7 @@ export class UserDTO extends BaseDTO {
 
   @Example('worldId')
   public worldId!: string
+
+  @Example([AlarmDTO])
+  public alarms?: AlarmDTO[]
 }

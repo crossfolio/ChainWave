@@ -4,7 +4,6 @@ interface HttpError extends Error {
   status?: number
 }
 
-// 錯誤處理 middleware
 export const errorHandler = (
   err: HttpError,
   req: Request,
