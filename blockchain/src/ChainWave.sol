@@ -99,5 +99,13 @@ contract ChainWave is Ownable2Step {
     }
 
     /// @notice Mint USDC by CCTP
-    function _mintUSDC() internal {}
+    function _mintUSDC(
+        bytes calldata messageBytes,
+        bytes calldata attestationSignature
+    ) internal returns (bool success) {
+        success = messageTransmitter.receiveMessage(
+            messageBytes,
+            attestationSignature
+        );
+    }
 }
