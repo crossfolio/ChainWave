@@ -58,4 +58,23 @@ export const contract_address = {
 
     ChainWave: '0xdc8cFDE4E25df84562D32E5Bd5F0e78E432b9c17',
   },
+
+  UNI: {
+    CCTP: {
+      Token_Messenger: '0x0',
+      Message_Transmitter: '0x0',
+      Message: '0x0',
+    },
+
+    UNI: {
+      Swap_Test: '0xe437355299114d35Ffcbc0c39e163B24A8E9cBf1',
+    },
+
+    Token: {
+      USDC: '0x31d0220469e10c4E71834a79b1f276d740d3768F',
+      UNI: '0x0',
+    },
+
+    ChainWave: '0xF9c39b98618F8c30c3edB127f41b75B395De6BE6',
+  },
 }
