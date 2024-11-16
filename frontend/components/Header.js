@@ -18,9 +18,9 @@ export default function Header({ account, onWalletConnected, onLogout }) {
     const fetchUserProfile = async () => {
       if (account) {
         try {
-          const savedWorldcoinId = Cookies.get('worldcoinId');
-          if (savedWorldcoinId) {
-            const userInfo = await getUserInfo(savedWorldcoinId);
+          const savedAddress = Cookies.get('newAccount');
+          if (savedAddress) {
+            const userInfo = await getUserInfo(savedAddress);
             if (userInfo && userInfo.name) {
               const imageUrl = `https://noun-api.com/beta/pfp?name=${encodeURIComponent(userInfo.name)}`;
               setProfileImage(imageUrl);
@@ -58,10 +58,10 @@ export default function Header({ account, onWalletConnected, onLogout }) {
     };
   }, [showNotifications]);
 
-  const getUserInfo = async (worldcoinId) => {
+  const getUserInfo = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${worldcoinId}`,
+        `http://localhost:3001/api/users/${wallet_address}`,
         {
           method: 'GET',
           headers: {
@@ -102,9 +102,7 @@ export default function Header({ account, onWalletConnected, onLogout }) {
     localStorage.removeItem('isAuthenticated');
 
     if (!checkMetaMaskAvailability()) return;
-
     closeLogoutDialog();
-
     window.location.reload();
   };
   const openLogoutDialog = () => setShowLogoutDialog(true);
@@ -129,24 +127,25 @@ export default function Header({ account, onWalletConnected, onLogout }) {
 
             {showNotifications && (
               <div className="absolute top-full mt-2 right-0 w-72 bg-white shadow-lg rounded-xl p-4 z-50">
-                <h3 className="font-semibold text-lg mb-2 text-blue-700">
-                  通知
-                </h3>
-                <ul className="space-y-2">
-                  {notifications.map((notification) => (
-                    <li
-                      key={notification.id}
-                      onClick={() => markAsRead(notification.id)}
-                      className={`p-2 rounded-lg text-blue-900 shadow-sm transition duration-150 cursor-pointer ${
-                        notification.isRead
-                          ? 'bg-gray-200'
-                          : 'bg-blue-50 hover:bg-blue-100'
-                      }`}
-                    >
-                      {notification.message}
-                    </li>
-                  ))}
-                </ul>
+                {notifications.length === 0 ? (
+                  <p className="text-gray-500">No any notifications</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {notifications.map((notification) => (
+                      <li
+                        key={notification.id}
+                        onClick={() => markAsRead(notification.id)}
+                        className={`p-2 rounded-lg text-blue-900 shadow-sm transition duration-150 cursor-pointer ${
+                          notification.isRead
+                            ? 'bg-gray-200'
+                            : 'bg-blue-50 hover:bg-blue-100'
+                        }`}
+                      >
+                        {notification.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
           </div>

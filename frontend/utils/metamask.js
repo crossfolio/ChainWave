@@ -8,7 +8,7 @@ export const connectMetaMask = async (
   showCreateAccountDialog,
 ) => {
   if (!window.ethereum) {
-    alert('Please Install MetaMask Wallet！');
+    alert('請安裝 MetaMask 錢包！');
     return;
   }
 
@@ -18,10 +18,11 @@ export const connectMetaMask = async (
     });
     const newAccount = accounts[0];
     setAccount(newAccount);
-    Cookies.set('newAccount', newAccount, { expires: 1 });
+    Cookies.set('newAccount', newAccount, { expires: 1 }); // cookie 有效期為 1 天
 
-    const querySchemaId = 'onchain_evm_421614_0x14e';
-    const worldcoinId = Cookies.get('worldcoinId');
+    // 執行 queryAttestations 驗證
+    const querySchemaId = 'onchain_evm_421614_0x14e'; // 替換為您的 Schema ID
+    const worldcoinId = Cookies.get('worldcoinId'); // 替換為您的 Worldcoin ID
     const isValid = await queryAttestations(querySchemaId, worldcoinId);
 
     if (isValid.revoked === true) {

@@ -10,15 +10,18 @@ export default function WorldCoin() {
   const router = useRouter();
   const { setOpen } = useIDKit();
 
+  // 驗證成功後的處理
   const onSuccess = (result) => {
     console.log(
       'Verification successful with World ID. Nullifier hash:',
       result.nullifier_hash,
     );
 
-    Cookies.set('isAuthenticated', 'true', { expires: 1 });
-    Cookies.set('worldcoinId', result.nullifier_hash, { expires: 1 });
+    // 驗證成功後，將成功資訊保存到 cookie 中
+    Cookies.set('isAuthenticated', 'true', { expires: 1 }); // cookie 有效期為 1 天
+    Cookies.set('worldcoinId', result.nullifier_hash, { expires: 1 }); // cookie 有效期為 1 天
 
+    // 重定向到原始頁面或首頁
     const redirectTo = router.query.redirectTo || '/';
     router.push(redirectTo);
   };
@@ -45,7 +48,7 @@ export default function WorldCoin() {
       console.log(data);
 
       if (data.success === true) {
-        onSuccess(result);
+        onSuccess(result); // 認證成功後調用 onSuccess
       } else {
         throw new Error(`Verification failed: ${data.detail}`);
       }
