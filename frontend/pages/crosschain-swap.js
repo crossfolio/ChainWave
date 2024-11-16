@@ -16,9 +16,8 @@ export default function CrossChainSwapPage() {
         return;
       }
 
-      setSwapStatus('正在發起跨鏈交換，請稍候...');
+      setSwapStatus('Initiating cross-chain exchange, please wait…');
 
-      // 發送交換請求到後端 API
       const response = await fetch('/api/crossChainSwap', {
         method: 'POST',
         headers: {
@@ -36,13 +35,13 @@ export default function CrossChainSwapPage() {
       const result = await response.json();
 
       if (response.ok) {
-        setSwapStatus(`交換成功: 交易哈希 ${result.txHash}`);
+        setSwapStatus(`Exchange Successful: Transaction Hash ${result.txHash}`);
       } else {
-        setSwapStatus(`交換失敗: ${result.error}`);
+        setSwapStatus(`Exchange Failed: ${result.error}`);
       }
     } catch (error) {
-      console.error('交換失敗', error);
-      setSwapStatus('交換失敗，請稍後重試');
+      console.error('Exchange Failed', error);
+      setSwapStatus('Exchange failed, please try again later.');
     }
   };
 
