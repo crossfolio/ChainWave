@@ -149,7 +149,7 @@ export default function NotificationList() {
 
   return (
     <div
-      className={`container mx-auto px-4 py-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}
+      className={`min-h-screen p-6 flex flex-col items-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}
     >
       <h2 className="text-3xl font-bold mb-6 text-center">Notification List</h2>
       {loading ? (
