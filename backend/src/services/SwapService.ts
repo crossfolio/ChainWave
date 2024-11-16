@@ -106,9 +106,9 @@ export class SwapService {
     const txReceipt = await tx.wait()
 
     if (txReceipt.status === 0) {
-      console.log('Failed to call destinationUSDC()')
+      console.log('Failed to call destinationUSDCAndSwap()')
     } else if (txReceipt.status === 1) {
-      console.log('Success to call destinationUSDC()')
+      console.log('Success to call destinationUSDCAndSwap()')
     }
 
     return txReceipt
@@ -204,9 +204,9 @@ export class SwapService {
     // STEP 2: Burn USDC
 
     if (srcChain !== dstChain) {
-      const tx = await autoSwap.multiChainSwap(
-        this.getBlockChainConfig(srcChain).tokenAddress,
-        contract_address.ETH.Token.UNI,
+      const tx = await autoSwap.autoMultiChainSwap(
+        this.getBlockChainConfig('ETH', 'USDC').tokenAddress,
+        this.getBlockChainConfig('ETH', 'UNI').tokenAddress,
         3000,
         60,
         ethers.ZeroAddress,
@@ -215,6 +215,7 @@ export class SwapService {
         '0x',
         3,
         destAutoSwapContractAddress,
+        walletAddress
       )
 
       await tx.wait()
@@ -239,7 +240,6 @@ export class SwapService {
 
       // STEP 5: Using the message bytes and signature receive the funds on destination chain and address
       // TODO: input to define only receive USDC or received USDC than swap
-
       if (destToken === 'USDC') {
         await this.destinationUSDC(
           messageBytes,
@@ -251,19 +251,19 @@ export class SwapService {
         await this.destinationUSDCAndSwap(
           messageBytes,
           attestationSignature,
-          this.getBlockChainConfig('ETH', 'UNI').tokenAddress as string, // TODO: define destChain pool's token
           this.getBlockChainConfig('ETH', 'USDC').tokenAddress as string,
+          this.getBlockChainConfig('ETH', 'UNI').tokenAddress as string, // TODO: define destChain pool's token
           3000,
           60,
           ethers.ZeroAddress,
-          false,
+          true,
           '0x',
           walletAddress,
           dstChain,
         )
       }
     } else {
-      const tx = await autoSwap.singleChainSwap(
+      const tx = await autoSwap.autoSingleChainSwap(
         this.getBlockChainConfig('ETH', 'USDC').tokenAddress,
         this.getBlockChainConfig('ETH', 'UNI').tokenAddress,
         3000,
@@ -272,13 +272,14 @@ export class SwapService {
         -ethers.parseEther('0.000001'),
         false,
         '0x',
+        walletAddress
       )
       const txReceipt = await tx.wait()
 
       if (txReceipt.status === 0) {
-        console.log('Failed to call multiChainSwap()')
+        console.log('Failed to call autoSingleChainSwap()')
       } else if (txReceipt.status === 1) {
-        console.log('Success to call multiChainSwap()')
+        console.log('Success to call autoSingleChainSwap()')
       }
     }
   }
