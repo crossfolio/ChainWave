@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         const response = await axios.get(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest`, {
             params: { symbol },
             headers: {
-                "X-CMC_PRO_API_KEY": process.env.COINMARKETCAP_KEY, // 從環境變量中讀取 API 密鑰
+                "X-CMC_PRO_API_KEY": process.env.NEXT_PUBLIC_COINMARKETCAP_KEY, // 從環境變量中讀取 API 密鑰
             },
         });
 
