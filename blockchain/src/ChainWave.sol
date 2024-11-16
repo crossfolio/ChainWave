@@ -74,7 +74,29 @@ contract ChainWave is Ownable2Step {
     }
 
     /// @notice Burn USDC by CCTP
-    function _burnUSDC() internal {}
+    /// @param destinationDomain specify which chain to receive USDC
+    /// @param destinationRecipient specify the USDC recipient
+    function _burnUSDC(
+        uint256 amount,
+        uint32 destinationDomain,
+        address destinationRecipient
+    ) internal returns (uint64 nonce) {
+        USDC.approve(address(tokenMessenger), amount);
+
+        bytes32 mintRecipientBytes32 = bytes32(
+            uint256(uint160(destinationRecipient))
+        );
+
+        bytes32 depositForBurnWithCallerBytes32 = mintRecipientBytes32;
+
+        nonce = tokenMessenger.depositForBurnWithCaller(
+            amount,
+            destinationDomain,
+            mintRecipientBytes32,
+            address(USDC),
+            depositForBurnWithCallerBytes32
+        );
+    }
 
     /// @notice Mint USDC by CCTP
     function _mintUSDC() internal {}

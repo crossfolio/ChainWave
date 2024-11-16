@@ -8,5 +8,5 @@ interface ITokenMessengerContract {
         bytes32 mintRecipient,
         address burnToken,
         bytes32 depositForBurnWithCaller
-    ) external returns (uint64 _nonce);
+    ) external returns (uint64 nonce);
 }
