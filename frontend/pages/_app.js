@@ -1,198 +1,59 @@
-// _app.js
-import Head from 'next/head';
-import '../styles/globals.css';
-import { useState, useEffect, createContext, useContext } from 'react';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
-import ThemeToggle from '../components/ThemeToggle';
-import CreateAccountDialog from '../components/CreateAccountDialog'; // 匯入建立帳號對話框
-import { useRouter } from 'next/router';
-import { connectMetaMask } from '../utils/metamask'; // 引入 connectMetaMask
-import { NotificationProvider } from '../contexts/NotificationContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
-
-const AuthContext = createContext();
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+import "../styles/globals.css";
+import { useState } from "react";
+import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
+import ThemeToggle from "../components/ThemeToggle";
+import { useRouter } from "next/router";
 
 function MyApp({ Component, pageProps }) {
   const [account, setAccount] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false); // 控制建立帳號對話框
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // 控制 Sidebar 展開/收合
   const router = useRouter();
-  // 判斷是否為首頁
-  const isHomePage = router.pathname === '/';
 
-  useEffect(() => {
-    checkAuthentication();
-
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length > 0) {
-          connectMetaMask(
-            setAccount,
-            setIsAuthenticated,
-            showCreateAccountDialogHandler,
-          );
-        } else {
-          onLogout();
-        }
-      });
-    }
-
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', connectMetaMask);
-      }
-    };
-  }, []);
-
-  const checkAuthentication = () => {
-    const savedAccount = localStorage.getItem('account');
-    const savedAuth = localStorage.getItem('isAuthenticated');
-
-    if (savedAccount && savedAuth === 'true') {
-      setAccount(savedAccount);
-      setIsAuthenticated(true);
-    }
-  };
-
-  const showCreateAccountDialogHandler = () => {
-    setShowCreateAccountDialog(true);
-  };
-
-  const handleAccountCreation = async (username, worldcoinId, address) => {
-    const response = await fetch(`${apiBaseUrl}/api/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        walletAddress: address,
-        name: username,
-        worldId: worldcoinId,
-      }),
-    });
-
-    const data = await response.json();
-    console.log('Account creation response:', data);
-    setShowCreateAccountDialog(false);
-    setIsAuthenticated(true);
-    localStorage.setItem('account', account);
-    localStorage.setItem('isAuthenticated', 'true');
-    console.log('Created account successfully');
-    alert('Created account successfully');
-    window.location.reload();
-  };
-
+  const onWalletConnected = (newAccount) => setAccount(newAccount);
   const onLogout = () => {
     setAccount(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('account');
-    localStorage.removeItem('isAuthenticated');
-    router.replace('/login');
-  };
-
-  const isLoginPage = router.pathname === '/login';
-
-  const authContextValue = {
-    account,
-    isAuthenticated,
-    onWalletConnected: () =>
-      connectMetaMask(
-        setAccount,
-        setIsAuthenticated,
-        showCreateAccountDialogHandler,
-      ),
-    onLogout,
+    router.replace("/");
   };
 
   return (
-    <>
-      <Head>
-        <link rel="icon" href="/img/logo.png" type="image/x-icon" />
-      </Head>
-      <ThemeProvider>
-        <NotificationProvider>
-          <AuthContext.Provider value={authContextValue}>
-            <div id="app" className="min-h-screen flex">
-              {!isLoginPage && (
-                <Sidebar
-                  account={account}
-                  isCollapsed={isSidebarCollapsed}
-                  toggleSidebar={() =>
-                    setIsSidebarCollapsed(!isSidebarCollapsed)
-                  }
-                />
-              )}
+    <div id="app" className="min-h-screen flex">
+      {/* 左側 Sidebar */}
+      <Sidebar 
+        account={account} 
+        isCollapsed={isSidebarCollapsed} 
+        toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+      />
 
-              <div
-                className={`flex flex-col ${!isLoginPage && (isSidebarCollapsed ? 'ml-20' : 'ml-64')
-                  } flex-1 transition-all duration-300`}
-              >
-                {!isLoginPage && (
-                  <div className="flex justify-between items-center z-10 relative">
-                    <Header
-                      account={account}
-                      onWalletConnected={() =>
-                        connectMetaMask(
-                          setAccount,
-                          setIsAuthenticated,
-                          showCreateAccountDialogHandler,
-                        )
-                      }
-                      onLogout={onLogout}
-                    />
-                    {!isHomePage && <ThemeToggle />} {/* 僅非首頁顯示 */}
-                  </div>
-                )}
+      {/* 右側主內容區域 */}
+      <div className={`flex flex-col ${isSidebarCollapsed ? 'ml-20' : 'ml-64'} flex-1 transition-all duration-300`}>
+        {/* Header 和 ThemeToggle */}
+        <div className="flex justify-between items-center p-4">
+          <Header
+            account={account}
+            onWalletConnected={onWalletConnected}
+            onLogout={onLogout}
+          />
+          <ThemeToggle />
+        </div>
 
-                <main>
-                  {isLoginPage || isAuthenticated ? (
-                    <Component {...pageProps} account={account} />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6">
-                      {/* Main Title and Subtitle */}
-                      <h1 className="text-5xl font-bold mb-4">
-                        Welcome to ChainWave!
-                      </h1>
-                      <p className="text-lg mb-8 max-w-xl text-center">
-                        ChainWave is a powerful tool that helps you monitor
-                        assets across multiple chains, offering token price
-                        tracking and automated secure cross-chain functionality
-                        to fully protect your assets.
-                      </p>
-
-                      {/* Button Section */}
-                      <div className="flex space-x-4">
-                        <button className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-100 transition-all duration-300">
-                          Get Started
-                        </button>
-                        <button className="bg-blue-700 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-800 transition-all duration-300">
-                          Learn More
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </main>
+        {/* 主內容 */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          {account ? (
+            <Component {...pageProps} account={account} />
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-center">
+              <div>
+                <h1 className="text-3xl font-bold">Welcome!</h1>
+                <p className="text-lg mt-2">
+                  Connect your MetaMask wallet to start your adventure.
+                </p>
               </div>
             </div>
-
-            {/* 建立帳號對話框 */}
-            <CreateAccountDialog
-              isOpen={showCreateAccountDialog}
-              onClose={() => setShowCreateAccountDialog(false)}
-              onCreate={handleAccountCreation}
-              account={account}
-            />
-          </AuthContext.Provider>
-        </NotificationProvider>
-      </ThemeProvider>
-    </>
+          )}
+        </main>
+      </div>
+    </div>
   );
 }
 

@@ -3,16 +3,16 @@ export default function LogoutDialog({ confirmLogout, cancelLogout }) {
   return (
     <div className="logout-dialog-overlay">
       <div className="logout-dialog">
-        <p> Logout </p>{' '}
+        <p>Are you sure you want to logout?</p>
         <div className="dialog-buttons">
           <button onClick={confirmLogout} className="confirm-btn">
-            Confirm{' '}
-          </button>{' '}
+            Confirm
+          </button>
           <button onClick={cancelLogout} className="cancel-btn">
-            Cancel{' '}
-          </button>{' '}
-        </div>{' '}
-      </div>{' '}
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

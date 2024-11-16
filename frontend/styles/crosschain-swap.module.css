@@ -1,0 +1,17 @@
+.cross-chain-swap-page {
+    padding: 20px;
+}
+
+.swap-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.swap-status {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
