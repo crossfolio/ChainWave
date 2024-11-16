@@ -57,7 +57,18 @@ contract SrcChainScript is Script {
         //     destinationRecipient
         // );
 
-        chainWave.singleChainSwap(
+        // chainWave.singleChainSwap(
+        //     token0,
+        //     token1,
+        //     fee,
+        //     tickSpacing,
+        //     hookAddr,
+        //     amountSpecified,
+        //     zeroForOne,
+        //     hookData
+        // );
+
+        chainWave.multiChainSwap(
             token0,
             token1,
             fee,
@@ -65,7 +76,9 @@ contract SrcChainScript is Script {
             hookAddr,
             amountSpecified,
             zeroForOne,
-            hookData
+            hookData,
+            destinationDomain,
+            destinationRecipient
         );
 
         vm.stopBroadcast();
