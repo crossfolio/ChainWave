@@ -4,3 +4,6 @@
 [submodule "blockchain/lib/openzeppelin-contracts"]
 	path = blockchain/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "blockchain/lib/v4-core"]
+	path = blockchain/lib/v4-core
+	url = https://github.com/uniswap/v4-core
