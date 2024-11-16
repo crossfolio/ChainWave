@@ -13,7 +13,6 @@ export default function CreateAccountDialog({
   const [name, setName] = useState('');
   const [schemaId, setSchemaId] = useState('0x14e');
 
-  // 狀態變數來控制「Sign message」和「Create Attestation」的顏色
   const [isMessageSigned, setIsMessageSigned] = useState(false);
   const [isAttestationCreated, setIsAttestationCreated] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -89,26 +88,6 @@ export default function CreateAccountDialog({
       console.error('Failed to create attestation:', error);
     }
   };
-
-  // const subscribeChannel = async () => {
-  //   try {
-  //     const provider = new ethers.BrowserProvider(window.ethereum);
-  //     const signer = await provider.getSigner();
-  //     const userDvp = await PushAPI.initialize(signer, {
-  //       env: CONSTANTS.ENV.PROD,
-  //     });
-  //     // 訂閱指定的頻道
-  //     const response = await userDvp.notification.subscribe(
-  //       `eip155:1:${'0xf73Dc2BdeB8855af9dc2B862C78DBB1F679b95c2'}`
-  //     );
-
-  //     setIsSubscribed(true);
-
-  //     console.log(response);
-  //   } catch (error) {
-  //     console.error('Failed to subscribe channel:', error);
-  //   }
-  // }
 
   const subscribeChannel = async () => {
     try {

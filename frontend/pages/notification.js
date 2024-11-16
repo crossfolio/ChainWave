@@ -12,6 +12,7 @@ export default function NotificationList() {
   const worldcoinid = Cookies.get('worldcoinId');
   const savedAddress = Cookies.get('newAccount');
   const { isDarkMode } = useTheme();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     if (worldcoinid) {
@@ -36,7 +37,7 @@ export default function NotificationList() {
     try {
       const newAlarms = alarms.filter((alarm) => alarm._id !== id);
       const response = await fetch(
-        `http://localhost:3001/api/users/${savedAddress}/alarms`,
+        `${apiBaseUrl}/api/users/${savedAddress}/alarms`,
         {
           method: 'POST',
           headers: {
@@ -85,7 +86,7 @@ export default function NotificationList() {
         return alarm;
       });
       const response = await fetch(
-        `http://localhost:3001/api/users/${savedAddress}/alarms`,
+        `${apiBaseUrl}/api/users/${savedAddress}/alarms`,
         {
           method: 'POST',
           headers: {
@@ -112,7 +113,7 @@ export default function NotificationList() {
   const getAlarms = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${wallet_address}/alarms`,
+        `${apiBaseUrl}/api/users/${wallet_address}/alarms`,
         {
           method: 'GET',
           headers: {

@@ -8,7 +8,7 @@ import {
 } from '../utils/getTokenList';
 import { chains } from '../utils/chainsConfig';
 import { useTheme } from '../contexts/ThemeContext';
-import Cookies from 'js-cookie'; // 引入 js-cookie 庫來操作 cookie
+import Cookies from 'js-cookie';
 import {
   contractAddress,
   UNIAddress,
@@ -38,6 +38,7 @@ export default function MultiChainAssets() {
   const { addNotification } = useNotification();
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     if (window.ethereum) {
@@ -77,7 +78,7 @@ export default function MultiChainAssets() {
     });
 
     try {
-      const response = await fetch(`http://localhost:3001/api/users/${savedAddress}/alarms`, {
+      const response = await fetch(`${apiBaseUrl}/api/users/${savedAddress}/alarms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,27 +99,22 @@ export default function MultiChainAssets() {
       alert('Fail to set alarm.');
     }
 
-    // approve
     if (notification.autoSwap && window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send('eth_requestAccounts', []);
         const signer = await provider.getSigner();
-        // 授權 crossChainSwapContract 使用您的代幣
-        // 設置 UNI 的 ERC20 合約
         const UNIContract = new ethers.Contract(
           UNIAddress,
           UNIContractABI,
           signer,
         );
-        // 設置 USDC 的 ERC20 合約
         const USDCContract = new ethers.Contract(
           USDCAddress,
           USDCContractABI,
           signer,
         );
 
-        //(2^256 - 1 )
         let tokenAmount = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
         if (selectedToken.symbol === 'UNI') {
           await UNIContract.approve(contractAddress, tokenAmount);
@@ -197,7 +193,6 @@ export default function MultiChainAssets() {
       });
     });
 
-    // TODO: 猴子寫法
     if (aggregated['UNI']) {
       localStorage.setItem('totalAmount_UNI', aggregated['UNI'].total);
     }
@@ -246,7 +241,7 @@ export default function MultiChainAssets() {
   const getAlarms = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${wallet_address}/alarms`,
+        `${apiBaseUrl}/api/users/${wallet_address}/alarms`,
         {
           method: 'GET',
           headers: {

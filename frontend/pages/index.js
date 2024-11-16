@@ -1,6 +1,5 @@
 import { useTheme } from '../contexts/ThemeContext';
 
-// pages/index.js
 export default function Home() {
   const { isDarkMode } = useTheme();
 

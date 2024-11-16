@@ -14,6 +14,9 @@ export default function Header({ account, onWalletConnected, onLogout }) {
   const { notifications, markAsRead, hasUnreadNotifications } =
     useNotification();
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  console.log(apiBaseUrl)
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (account) {
@@ -61,7 +64,7 @@ export default function Header({ account, onWalletConnected, onLogout }) {
   const getUserInfo = async (wallet_address) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/users/${wallet_address}`,
+        `${apiBaseUrl}/api/users/${wallet_address}`,
         {
           method: 'GET',
           headers: {
@@ -135,11 +138,10 @@ export default function Header({ account, onWalletConnected, onLogout }) {
                       <li
                         key={notification.id}
                         onClick={() => markAsRead(notification.id)}
-                        className={`p-2 rounded-lg text-blue-900 shadow-sm transition duration-150 cursor-pointer ${
-                          notification.isRead
-                            ? 'bg-gray-200'
-                            : 'bg-blue-50 hover:bg-blue-100'
-                        }`}
+                        className={`p-2 rounded-lg text-blue-900 shadow-sm transition duration-150 cursor-pointer ${notification.isRead
+                          ? 'bg-gray-200'
+                          : 'bg-blue-50 hover:bg-blue-100'
+                          }`}
                       >
                         {notification.message}
                       </li>
