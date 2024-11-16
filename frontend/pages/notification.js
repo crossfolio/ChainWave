@@ -8,6 +8,8 @@ export default function NotificationList() {
   const [error, setError] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editAlarm, setEditNotification] = useState(null);
+  const [isSwapDialogOpen, setIsSwapDialogOpen] = useState(false);
+  const [swapDetails, setSwapDetails] = useState(null);
 
   const worldcoinid = Cookies.get('worldcoinId');
   const savedAddress = Cookies.get('newAccount');
@@ -25,6 +27,7 @@ export default function NotificationList() {
     setError(null);
     try {
       const data = await getAlarms(savedAddress);
+      console.log(data)
       setNotifications(data);
     } catch (err) {
       setError('Failed to load alarms.');
@@ -53,7 +56,7 @@ export default function NotificationList() {
       setNotifications(alarms.filter((alarm) => alarm._id !== id));
       alert('Delete notification successfully.');
     } catch (error) {
-      console.error('Error deleting alarm:', err);
+      console.error('Error deleting alarm:', error);
       alert('Failed to delete notification.');
     }
   };
@@ -77,16 +80,19 @@ export default function NotificationList() {
     try {
       const updatedAlarms = alarms.map((alarm) => {
         if (alarm._id === editAlarm._id) {
+          const { _id, ...rest } = alarm;
           return {
-            ...alarm,
+            ...rest,
             condition: editAlarm.condition,
-            price: editAlarm.price,
-            status: editAlarm.status,
-            isSwap: editAlarm.isSwap,
+            price: parseFloat(editAlarm.price),
           };
         }
-        return alarm;
+        const { _id, ...rest } = alarm;
+        return rest;
       });
+
+      console.log(updatedAlarms)
+
       const response = await fetch(
         `${apiBaseUrl}/api/users/${savedAddress}/alarms`,
         {
@@ -107,7 +113,7 @@ export default function NotificationList() {
       closeEditDialog();
       alert('Update notification successfully.');
     } catch (error) {
-      console.error('Error deleting alarm:', err);
+      console.error('Error updating alarm:', error);
       alert('Failed to update notification.');
     }
   };
@@ -124,11 +130,21 @@ export default function NotificationList() {
         },
       );
       const data = await response.json();
-      console.log(data)
+      console.log(data);
       return data;
     } catch (error) {
       console.error('Error during get user info:', error);
     }
+  };
+
+  const openSwapDialog = (alarm) => {
+    setSwapDetails(alarm);
+    setIsSwapDialogOpen(true);
+  };
+
+  const closeSwapDialog = () => {
+    setIsSwapDialogOpen(false);
+    setSwapDetails(null);
   };
 
   return (
@@ -171,8 +187,22 @@ export default function NotificationList() {
                       {alarm.condition === 'greater than' ? '>' : '<'}
                     </td>
                     <td className="py-3 px-4">${alarm.price}</td>
-                    <td className="py-3 px-4">{alarm.status === 'active' ? "Active" : "Notified"}</td>
-                    <td className="py-3 px-4 text-center">{alarm.isSwap === true ? "✅" : "❌"}</td>
+                    <td className="py-3 px-4">{alarm.status === 'active' ? 'Active' : 'Notified'}</td>
+                    <td className="py-3 px-4 text-center">
+                      {alarm.isSwap === true ? (
+                        <button
+                          onClick={() => openSwapDialog(alarm)}
+                          className={`px-3 py-1 rounded text-white mr-2`}
+                          style={{ backgroundColor: '#007EA7' }}
+                          onMouseEnter={(e) => (e.target.style.backgroundColor = '#34B4CC')}
+                          onMouseLeave={(e) => (e.target.style.backgroundColor = '#007EA7')}
+                        >
+                          View
+                        </button>
+                      ) : (
+                        '❌'
+                      )}
+                    </td>
                     <td className="py-3 px-4 text-center">
                       <button
                         onClick={() => openEditDialog(alarm)}
@@ -197,7 +227,7 @@ export default function NotificationList() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="py-4 text-center text-gray-500">
+                  <td colSpan="7" className="py-4 text-center text-gray-500">
                     {loading ? 'Loading...' : 'No alarms found.'}
                   </td>
                 </tr>
@@ -214,11 +244,7 @@ export default function NotificationList() {
           >
             <h3 className="text-xl font-bold mb-4">Edit Notification</h3>
             <div className="mb-4">
-              <label
-                className={`block text-sm font-medium text-gray-700 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
-              >
-                Symbol
-              </label>
+              <label className="block text-sm font-medium">Symbol</label>
               <input
                 type="text"
                 name="symbol"
@@ -229,27 +255,19 @@ export default function NotificationList() {
               />
             </div>
             <div className="mb-4">
-              <label
-                className={`block text-sm font-medium text-gray-700 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
-              >
-                Condition
-              </label>
+              <label className="block text-sm font-medium">Condition</label>
               <select
                 name="condition"
                 value={editAlarm.condition}
                 onChange={handleEditChange}
                 className={`w-full border rounded-lg p-2 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
               >
-                <option value="greater">Greater than</option>
-                <option value="less">Less than</option>
+                <option value="greater than">Greater than</option>
+                <option value="less than">Less than</option>
               </select>
             </div>
             <div className="mb-4">
-              <label
-                className={`block text-sm font-medium text-gray-700 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
-              >
-                Price
-              </label>
+              <label className="block text-sm font-medium">Price</label>
               <input
                 type="number"
                 name="price"
@@ -270,9 +288,39 @@ export default function NotificationList() {
               </button>
               <button
                 onClick={closeEditDialog}
-                className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+                className={`px-4 py-2 rounded-md font-medium focus:outline-none transition-colors ${isDarkMode
+                  ? 'bg-gray-600 text-white hover:bg-gray-500'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isSwapDialogOpen && swapDetails && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div
+            className={`p-6 rounded-lg shadow-lg w-full max-w-md ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+          >
+            <h3 className="text-xl font-bold mb-4">Swap Details</h3>
+            <div className="mb-4">
+              <p><strong>Source Chain:</strong> {swapDetails.srcChain}</p>
+              <p><strong>Destination Chain:</strong> {swapDetails.dstChain}</p>
+              <p><strong>Source Token:</strong> {swapDetails.symbol}</p>
+              <p><strong>Destination Token:</strong> {swapDetails.destToken}</p>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={closeSwapDialog}
+                className={`px-4 py-2 rounded-md font-medium focus:outline-none transition-colors ${isDarkMode
+                  ? 'bg-gray-600 text-white hover:bg-gray-500'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  }`}
+              >
+                Close
               </button>
             </div>
           </div>
